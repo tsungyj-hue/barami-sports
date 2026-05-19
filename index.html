@@ -34,7 +34,6 @@
     .subtitle { opacity: 0.9; font-size: 16px; margin-bottom: 20px; }
     .hero-info { display: flex; justify-content: center; gap: 16px; flex-wrap: wrap; font-size: 14px; background: rgba(0,0,0,0.15); padding: 10px; border-radius: 8px; }
 
-    /* 동기화 상태 표시 */
     .sync-bar {
       background: #f0fdf4; border: 1px solid #bbf7d0; padding: 8px 16px;
       border-radius: 8px; margin-bottom: 12px; display: flex;
@@ -53,8 +52,9 @@
     .admin-btn:hover { background: #1e293b; }
     .admin-btn.logged-in { background: #dc2626; }
 
-    .tabs { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; margin-bottom: 20px; }
-    .tab-btn { background: white; border: 1px solid #e2e8f0; padding: 12px 4px; font-size: 12px; font-weight: 600; color: var(--text-muted); border-radius: 8px; cursor: pointer; transition: all 0.2s; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+    /* ── 탭: 7개로 확장 ── */
+    .tabs { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-bottom: 20px; }
+    .tab-btn { background: white; border: 1px solid #e2e8f0; padding: 12px 4px; font-size: 11px; font-weight: 600; color: var(--text-muted); border-radius: 8px; cursor: pointer; transition: all 0.2s; display: flex; flex-direction: column; align-items: center; gap: 4px; }
     .tab-btn:hover { background: var(--primary-light); color: var(--primary); }
     .tab-btn.active { background: var(--primary); color: white; border-color: var(--primary); box-shadow: var(--shadow); }
 
@@ -131,12 +131,156 @@
 
     .chart-container { position: relative; margin: 10px auto; height: 240px; width: 100%; }
 
+    /* ══════════════════════════════════════════
+       청백 통합 명단 탭 전용 스타일
+    ══════════════════════════════════════════ */
+    .roster-view-filter {
+      display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap;
+    }
+    .roster-view-filter select, .roster-view-filter button {
+      padding: 9px 14px; border: 1px solid #cbd5e1; border-radius: 8px;
+      font-size: 13px; font-weight: bold; outline: none; background: white; cursor: pointer;
+    }
+    .roster-view-filter button {
+      background: var(--primary); color: white; border-color: var(--primary);
+      transition: background 0.2s;
+    }
+    .roster-view-filter button:hover { background: #1e3a8a; }
+
+    /* 뷰 모드 토글 */
+    .view-toggle { display: flex; gap: 6px; margin-bottom: 16px; }
+    .view-toggle button {
+      flex: 1; padding: 9px; border: 1px solid #e2e8f0; border-radius: 8px;
+      font-size: 12px; font-weight: bold; cursor: pointer; background: white;
+      color: var(--text-muted); transition: all 0.2s;
+    }
+    .view-toggle button.active {
+      background: var(--primary); color: white; border-color: var(--primary);
+    }
+
+    /* 청백 2단 컬럼 */
+    .team-columns {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+    }
+    .team-column-blue {
+      border: 2px solid #bfdbfe; border-radius: 10px; overflow: hidden;
+    }
+    .team-column-white {
+      border: 2px solid #e2e8f0; border-radius: 10px; overflow: hidden;
+    }
+    .team-col-header {
+      padding: 10px 14px; font-weight: 800; font-size: 14px; text-align: center;
+    }
+    .team-col-header.blue { background: #2563eb; color: white; }
+    .team-col-header.white { background: #475569; color: white; }
+
+    /* 이벤트 섹션 */
+    .roster-view-section {
+      margin-bottom: 18px;
+    }
+    .roster-view-section-title {
+      font-size: 13px; font-weight: 800; color: var(--primary);
+      background: var(--primary-light); padding: 6px 12px;
+      border-radius: 6px; margin-bottom: 8px; display: flex;
+      justify-content: space-between; align-items: center;
+    }
+    .roster-view-section-title .all-badge {
+      font-size: 10px; background: #d1fae5; color: #065f46;
+      padding: 2px 7px; border-radius: 10px;
+    }
+    .roster-name-list {
+      display: flex; flex-wrap: wrap; gap: 6px;
+    }
+    .roster-name-chip {
+      display: inline-flex; align-items: center; gap: 4px;
+      background: #f1f5f9; border: 1px solid #e2e8f0;
+      padding: 4px 10px; border-radius: 20px; font-size: 12px;
+      color: var(--text-main); font-weight: 600;
+    }
+    .roster-name-chip .slot-label {
+      font-size: 10px; color: var(--text-muted); font-weight: normal;
+    }
+    .roster-name-chip.empty { color: #94a3b8; border-style: dashed; font-weight: normal; font-style: italic; }
+
+    /* 테이블 뷰 모드 */
+    .roster-table-view table th { font-size: 12px; padding: 8px 10px; }
+    .roster-table-view table td { font-size: 12px; padding: 8px 10px; }
+    .chip-blue { background: #dbeafe; color: #1e40af; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; white-space: nowrap; }
+    .chip-white { background: #f1f5f9; color: #475569; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; white-space: nowrap; }
+
+    /* 새로고침 버튼 */
+    .refresh-btn {
+      background: none; border: 1px solid #cbd5e1; padding: 6px 12px;
+      border-radius: 6px; font-size: 12px; cursor: pointer; color: var(--text-muted);
+      display: flex; align-items: center; gap: 4px; transition: all 0.2s;
+    }
+    .refresh-btn:hover { background: var(--primary-light); color: var(--primary); border-color: var(--primary); }
+
+    /* 종목별 뷰 */
+    .event-roster-block {
+      border: 1px solid #e2e8f0; border-radius: 10px;
+      margin-bottom: 14px; overflow: hidden;
+    }
+    .event-roster-title {
+      padding: 10px 14px; background: #f8fafc;
+      font-weight: 700; font-size: 14px; color: var(--primary);
+      border-bottom: 1px solid #e2e8f0; display: flex;
+      justify-content: space-between; align-items: center;
+    }
+    .event-roster-body {
+      display: grid; grid-template-columns: 1fr 1fr;
+    }
+    .event-roster-team {
+      padding: 12px 14px;
+    }
+    .event-roster-team:first-child {
+      border-right: 1px solid #e2e8f0;
+    }
+    .event-roster-team-label {
+      font-size: 11px; font-weight: 800; margin-bottom: 8px;
+    }
+    .event-roster-team-label.blue { color: #2563eb; }
+    .event-roster-team-label.white { color: #475569; }
+
+    /* 학년 구분 헤더 */
+    .grade-section-header {
+      background: linear-gradient(135deg, #1e40af, #3b82f6);
+      color: white; padding: 10px 16px; border-radius: 8px;
+      margin-bottom: 12px; margin-top: 8px;
+      font-weight: 800; font-size: 15px; display: flex;
+      justify-content: space-between; align-items: center;
+    }
+    .grade-section-header span.sub { font-size: 12px; opacity: 0.8; font-weight: normal; }
+
+    /* 로딩 스피너 */
+    .loading-spinner {
+      text-align: center; padding: 40px; color: var(--text-muted); font-size: 14px;
+    }
+    .spinner { display: inline-block; width: 24px; height: 24px; border: 3px solid #e2e8f0;
+      border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; vertical-align: middle; margin-right: 8px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* 통계 요약 */
+    .roster-stats {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px;
+    }
+    .stat-card {
+      background: white; border: 1px solid #e2e8f0; border-radius: 8px;
+      padding: 12px; text-align: center;
+    }
+    .stat-card .stat-num { font-size: 22px; font-weight: 800; color: var(--primary); }
+    .stat-card .stat-label { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
     @media (max-width: 700px) {
-      .tabs { grid-template-columns: repeat(3, 1fr); }
+      .tabs { grid-template-columns: repeat(4, 1fr); }
       .input-grid-2col { grid-template-columns: 1fr; }
       .hero h1 { font-size: 22px; }
       .action-bar { flex-direction: column; }
       .btn { width: 100%; }
+      .team-columns { grid-template-columns: 1fr; }
+      .event-roster-body { grid-template-columns: 1fr; }
+      .event-roster-team:first-child { border-right: none; border-bottom: 1px solid #e2e8f0; }
+      .roster-stats { grid-template-columns: repeat(2, 1fr); }
     }
   </style>
 </head>
@@ -154,7 +298,6 @@
     </div>
   </div>
 
-  <!-- 동기화 상태 표시 -->
   <div class="sync-bar" id="syncBar">
     <span><span class="sync-dot syncing" id="syncDot"></span><span id="syncText">☁️ Supabase 서버에 연결 중...</span></span>
     <span id="syncTime"></span>
@@ -165,12 +308,14 @@
     <button class="admin-btn" id="adminToggleBtn" onclick="toggleAdminMode()">체육교사 인증</button>
   </div>
 
+  <!-- 탭 7개: 청백명단 추가 -->
   <div class="tabs">
     <button class="tab-btn active" onclick="switchTab(event,'tab-schedule')"><span>📋</span>행사일정</button>
     <button class="tab-btn" onclick="switchTab(event,'tab-events')"><span>🎯</span>종목요강</button>
     <button class="tab-btn" onclick="switchTab(event,'tab-scores')"><span>📊</span>공식배점</button>
     <button class="tab-btn" onclick="switchTab(event,'tab-manage')"><span>✍️</span>명단작성</button>
     <button class="tab-btn" onclick="switchTab(event,'tab-parents')"><span>👪</span>학부모참석</button>
+    <button class="tab-btn" onclick="switchTab(event,'tab-allroster'); loadAllRosterView()"><span>🏅</span>청백명단</button>
     <button class="tab-btn" onclick="switchTab(event,'tab-search')"><span>🔎</span>통합검색</button>
   </div>
 
@@ -301,6 +446,57 @@
     </div>
   </div>
 
+  <!-- ★ 청백 통합 명단 탭 ★ -->
+  <div id="tab-allroster" class="tab-content">
+    <div class="card">
+      <h2>🏅 청백 통합 출전 명단</h2>
+
+      <!-- 필터 & 새로고침 -->
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:12px;">
+        <div class="roster-view-filter">
+          <select id="arGrade" onchange="renderAllRoster()">
+            <option value="all">전체 학년</option>
+            <option value="1학년">1학년</option>
+            <option value="2학년">2학년</option>
+            <option value="3학년">3학년</option>
+          </select>
+          <select id="arEvent" onchange="renderAllRoster()">
+            <option value="all">전체 종목</option>
+          </select>
+        </div>
+        <button class="refresh-btn" onclick="loadAllRosterView()">🔄 새로고침</button>
+      </div>
+
+      <!-- 뷰 모드 전환 -->
+      <div class="view-toggle">
+        <button id="vbtnEvent" class="active" onclick="setArView('event')">📌 종목별 보기</button>
+        <button id="vbtnGrade" onclick="setArView('grade')">🎓 학년별 보기</button>
+        <button id="vbtnTable" onclick="setArView('table')">📋 표 형식 보기</button>
+      </div>
+
+      <!-- 통계 요약 -->
+      <div class="roster-stats" id="arStats">
+        <div class="stat-card">
+          <div class="stat-num" id="arStatTotal">-</div>
+          <div class="stat-label">총 출전 선수 수</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" style="color:#2563eb;" id="arStatBlue">-</div>
+          <div class="stat-label">🔵 청팀 출전</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" style="color:#475569;" id="arStatWhite">-</div>
+          <div class="stat-label">⚪ 백팀 출전</div>
+        </div>
+      </div>
+
+      <!-- 명단 출력 영역 -->
+      <div id="allRosterContent">
+        <div class="loading-spinner"><span class="spinner"></span> 명단 불러오는 중...</div>
+      </div>
+    </div>
+  </div>
+
   <!-- 통합검색 -->
   <div id="tab-search" class="tab-content">
     <div class="card">
@@ -362,7 +558,7 @@ const officialEvents = [
 ];
 
 // =====================================================
-// 상태 변수 (Supabase에서 로드)
+// 상태 변수
 // =====================================================
 let currentRoster = {};
 let matchScores   = {};
@@ -370,6 +566,9 @@ let lockedRosters = {};
 let parentsData   = {};
 let lockedParents = {};
 let scoreChartInstance = null;
+
+// 청백명단 뷰 상태
+let arViewMode = 'event'; // 'event' | 'grade' | 'table'
 
 // =====================================================
 // 동기화 상태 표시
@@ -392,7 +591,6 @@ function setSyncStatus(state, msg) {
 async function initSupabase() {
   setSyncStatus('syncing', '☁️ Supabase 서버에 연결 중...');
   try {
-    // 1) 명단 로드
     const { data: rosterRows, error: rErr } = await db.from('roster').select('*');
     if (rErr) throw rErr;
     currentRoster = {};
@@ -403,20 +601,17 @@ async function initSupabase() {
       currentRoster[row.grade][row.team][row.event_name][row.slot] = row.student_name || '';
     });
 
-    // 2) 점수 로드
     const { data: scoreRows, error: sErr } = await db.from('scores').select('*');
     if (sErr) throw sErr;
     matchScores = {};
     officialEvents.forEach(ev => { matchScores[ev.name] = { blue: 0, white: 0 }; });
     (scoreRows || []).forEach(row => { matchScores[row.event_name] = { blue: row.blue || 0, white: row.white || 0 }; });
 
-    // 3) 잠금 상태 로드 (localStorage 유지)
     const savedLocks = localStorage.getItem('barami_roster_locks');
     if (savedLocks) lockedRosters = JSON.parse(savedLocks);
     const savedParentsLocks = localStorage.getItem('barami_parents_locks');
     if (savedParentsLocks) lockedParents = JSON.parse(savedParentsLocks);
 
-    // 4) 학부모 로드
     const { data: parentRows, error: pErr } = await db.from('parents').select('*');
     if (pErr) throw pErr;
     parentsData = {};
@@ -430,6 +625,7 @@ async function initSupabase() {
     renderScoreTable();
     renderRosterForm();
     renderParentsForm();
+    populateArEventFilter();
   } catch (e) {
     console.error(e);
     setSyncStatus('error', '❌ 서버 연결 실패: ' + e.message + ' — localStorage로 대체 동작 중');
@@ -444,6 +640,7 @@ function fallbackToLocal() {
   if (savedScores) matchScores = JSON.parse(savedScores);
   else officialEvents.forEach(ev => { matchScores[ev.name] = { blue: 0, white: 0 }; });
   renderScoreTable(); renderRosterForm(); renderParentsForm();
+  populateArEventFilter();
 }
 
 // =====================================================
@@ -502,8 +699,6 @@ async function updateLiveScore(input) {
   const val = parseInt(input.value) || 0;
   matchScores[eventName][team] = val;
   calculateTotalAndRefreshChart();
-
-  // Supabase upsert
   try {
     const upsertData = { event_name: eventName, blue: matchScores[eventName].blue, white: matchScores[eventName].white };
     await db.from('scores').upsert(upsertData, { onConflict: 'event_name' });
@@ -637,7 +832,6 @@ async function saveRosterData() {
 
   setSyncStatus('syncing', '☁️ 명단 저장 중...');
 
-  // 화면에서 입력값 수집
   document.querySelectorAll('.student-input').forEach(input => {
     const g = input.getAttribute('data-grade'), t = input.getAttribute('data-team');
     const ev = input.getAttribute('data-event'), sl = input.getAttribute('data-slot');
@@ -647,9 +841,7 @@ async function saveRosterData() {
     currentRoster[g][t][ev][sl] = input.value.trim();
   });
 
-  // Supabase에 upsert
   try {
-    // 기존 이 반 데이터 삭제 후 재삽입
     await db.from('roster').delete().eq('grade', grade).eq('team', team);
 
     const rows = [];
@@ -924,6 +1116,341 @@ function switchTab(e, tabId) {
 }
 
 // =====================================================
+// ★ 청백 통합 명단 탭 로직 ★
+// =====================================================
+
+// 종목 필터 드롭다운 채우기
+function populateArEventFilter() {
+  const sel = document.getElementById('arEvent');
+  sel.innerHTML = '<option value="all">전체 종목</option>';
+  officialEvents.filter(ev => ev.type === 'roster').forEach(ev => {
+    const opt = document.createElement('option');
+    opt.value = ev.name;
+    opt.textContent = ev.name;
+    sel.appendChild(opt);
+  });
+}
+
+// 탭 클릭 시 서버에서 최신 데이터 로드
+async function loadAllRosterView() {
+  const content = document.getElementById('allRosterContent');
+  content.innerHTML = '<div class="loading-spinner"><span class="spinner"></span> 최신 명단 불러오는 중...</div>';
+  try {
+    const { data: rosterRows, error } = await db.from('roster').select('*');
+    if (error) throw error;
+    currentRoster = {};
+    (rosterRows || []).forEach(row => {
+      if (!currentRoster[row.grade]) currentRoster[row.grade] = {};
+      if (!currentRoster[row.grade][row.team]) currentRoster[row.grade][row.team] = {};
+      if (!currentRoster[row.grade][row.team][row.event_name]) currentRoster[row.grade][row.team][row.event_name] = {};
+      currentRoster[row.grade][row.team][row.event_name][row.slot] = row.student_name || '';
+    });
+    setSyncStatus('ok', '✅ 청백 명단 최신 동기화 완료');
+  } catch(e) {
+    setSyncStatus('error', '❌ 로드 실패 — 로컬 데이터 사용');
+  }
+  renderAllRoster();
+}
+
+// 뷰 모드 설정
+function setArView(mode) {
+  arViewMode = mode;
+  document.getElementById('vbtnEvent').classList.toggle('active', mode === 'event');
+  document.getElementById('vbtnGrade').classList.toggle('active', mode === 'grade');
+  document.getElementById('vbtnTable').classList.toggle('active', mode === 'table');
+  renderAllRoster();
+}
+
+// 메인 렌더 함수 — 뷰 모드에 따라 분기
+function renderAllRoster() {
+  const filterGrade = document.getElementById('arGrade').value;
+  const filterEvent = document.getElementById('arEvent').value;
+
+  // 통계 계산
+  let totalCount = 0, blueCount = 0, whiteCount = 0;
+  const grades = ['1학년', '2학년', '3학년'];
+  grades.forEach(g => {
+    ['청팀(1반팀)', '백팀(2반팀)'].forEach(t => {
+      const events = currentRoster[g]?.[t] || {};
+      Object.values(events).forEach(slots => {
+        Object.values(slots).forEach(name => {
+          if (name) {
+            totalCount++;
+            if (t === '청팀(1반팀)') blueCount++;
+            else whiteCount++;
+          }
+        });
+      });
+    });
+  });
+  document.getElementById('arStatTotal').textContent = totalCount;
+  document.getElementById('arStatBlue').textContent  = blueCount;
+  document.getElementById('arStatWhite').textContent = whiteCount;
+
+  const content = document.getElementById('allRosterContent');
+  content.innerHTML = '';
+
+  if (arViewMode === 'event') {
+    renderArByEvent(content, filterGrade, filterEvent);
+  } else if (arViewMode === 'grade') {
+    renderArByGrade(content, filterGrade, filterEvent);
+  } else {
+    renderArTable(content, filterGrade, filterEvent);
+  }
+}
+
+// ── 뷰1: 종목별 ──
+function renderArByEvent(container, filterGrade, filterEvent) {
+  const grades = filterGrade === 'all' ? ['1학년', '2학년', '3학년'] : [filterGrade];
+  const rosterEvents = officialEvents.filter(ev =>
+    ev.type === 'roster' && (filterEvent === 'all' || ev.name === filterEvent)
+  );
+
+  if (rosterEvents.length === 0) {
+    container.innerHTML = '<div class="info-empty-card">조회할 종목이 없습니다.</div>';
+    return;
+  }
+
+  rosterEvents.forEach(ev => {
+    const block = document.createElement('div');
+    block.className = 'event-roster-block';
+
+    const titleEl = document.createElement('div');
+    titleEl.className = 'event-roster-title';
+    titleEl.innerHTML = `<span>🏅 ${ev.name}</span><span style="font-size:11px;color:var(--text-muted);">${ev.req}</span>`;
+    block.appendChild(titleEl);
+
+    grades.forEach(grade => {
+      // 학년 구분 라벨 (전체 학년일 때만)
+      if (filterGrade === 'all') {
+        const gradeLabel = document.createElement('div');
+        gradeLabel.style.cssText = 'padding:6px 14px;background:#f1f5f9;font-size:12px;font-weight:700;color:#1e40af;border-top:1px solid #e2e8f0;';
+        gradeLabel.textContent = `📚 ${grade}`;
+        block.appendChild(gradeLabel);
+      }
+
+      const body = document.createElement('div');
+      body.className = 'event-roster-body';
+
+      ['청팀(1반팀)', '백팀(2반팀)'].forEach((team, ti) => {
+        const teamDiv = document.createElement('div');
+        teamDiv.className = 'event-roster-team';
+
+        const label = document.createElement('div');
+        label.className = `event-roster-team-label ${ti === 0 ? 'blue' : 'white'}`;
+        label.textContent = ti === 0 ? '🔵 청팀 (1반팀)' : '⚪ 백팀 (2반팀)';
+        teamDiv.appendChild(label);
+
+        const nameList = document.createElement('div');
+        nameList.className = 'roster-name-list';
+
+        // 다산 한마음 계주: 슬롯 동적 생성
+        let slots = ev.slots || [];
+        if (ev.name === '다산 한마음 계주') {
+          const spec = classGenderSpecs[grade]?.[team];
+          slots = spec ? Array.from({length: spec.total}, (_, i) => `주자 ${i+1}번`) : [];
+        }
+
+        const eventData = currentRoster[grade]?.[team]?.[ev.name] || {};
+        let hasAny = false;
+
+        slots.forEach(slot => {
+          const name = eventData[slot] || '';
+          const chip = document.createElement('span');
+          if (name) {
+            chip.className = 'roster-name-chip';
+            chip.innerHTML = `${name}<span class="slot-label">${slot}</span>`;
+            hasAny = true;
+          } else {
+            chip.className = 'roster-name-chip empty';
+            chip.textContent = slot;
+          }
+          nameList.appendChild(chip);
+        });
+
+        if (!hasAny && slots.length === 0) {
+          nameList.innerHTML = '<span class="roster-name-chip empty">미입력</span>';
+        }
+
+        teamDiv.appendChild(nameList);
+        body.appendChild(teamDiv);
+      });
+
+      block.appendChild(body);
+    });
+
+    container.appendChild(block);
+  });
+
+  // 공통 종목 안내
+  if (filterEvent === 'all') {
+    const allEventsBlock = document.createElement('div');
+    allEventsBlock.style.cssText = 'background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:14px;margin-top:4px;';
+    allEventsBlock.innerHTML = `
+      <div style="font-weight:700;color:#16a34a;margin-bottom:8px;">✅ 학년 전원 참여 종목 (개별 명단 없음)</div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;">
+        ${officialEvents.filter(ev => ev.type === 'all').map(ev =>
+          `<span style="background:white;border:1px solid #bbf7d0;padding:4px 12px;border-radius:20px;font-size:13px;font-weight:600;color:#15803d;">${ev.name}</span>`
+        ).join('')}
+      </div>
+    `;
+    container.appendChild(allEventsBlock);
+  }
+}
+
+// ── 뷰2: 학년별 ──
+function renderArByGrade(container, filterGrade, filterEvent) {
+  const grades = filterGrade === 'all' ? ['1학년', '2학년', '3학년'] : [filterGrade];
+
+  grades.forEach(grade => {
+    const gradeHeader = document.createElement('div');
+    gradeHeader.className = 'grade-section-header';
+    gradeHeader.innerHTML = `<span>📚 ${grade}</span><span class="sub">청팀 vs 백팀 출전 선수</span>`;
+    container.appendChild(gradeHeader);
+
+    const cols = document.createElement('div');
+    cols.className = 'team-columns';
+
+    ['청팀(1반팀)', '백팀(2반팀)'].forEach((team, ti) => {
+      const col = document.createElement('div');
+      col.className = ti === 0 ? 'team-column-blue' : 'team-column-white';
+
+      const header = document.createElement('div');
+      header.className = `team-col-header ${ti === 0 ? 'blue' : 'white'}`;
+      header.textContent = ti === 0 ? '🔵 청팀 (1반팀)' : '⚪ 백팀 (2반팀)';
+      col.appendChild(header);
+
+      const body = document.createElement('div');
+      body.style.padding = '12px';
+
+      const rosterEvents = officialEvents.filter(ev =>
+        ev.type === 'roster' && (filterEvent === 'all' || ev.name === filterEvent)
+      );
+
+      rosterEvents.forEach(ev => {
+        const sec = document.createElement('div');
+        sec.className = 'roster-view-section';
+
+        const title = document.createElement('div');
+        title.className = 'roster-view-section-title';
+        title.textContent = ev.name;
+        sec.appendChild(title);
+
+        const nameList = document.createElement('div');
+        nameList.className = 'roster-name-list';
+
+        let slots = ev.slots || [];
+        if (ev.name === '다산 한마음 계주') {
+          const spec = classGenderSpecs[grade]?.[team];
+          slots = spec ? Array.from({length: spec.total}, (_, i) => `주자 ${i+1}번`) : [];
+        }
+
+        const eventData = currentRoster[grade]?.[team]?.[ev.name] || {};
+        slots.forEach(slot => {
+          const name = eventData[slot] || '';
+          const chip = document.createElement('span');
+          if (name) {
+            chip.className = 'roster-name-chip';
+            chip.innerHTML = `${name}<span class="slot-label">${slot}</span>`;
+          } else {
+            chip.className = 'roster-name-chip empty';
+            chip.textContent = '미입력';
+          }
+          nameList.appendChild(chip);
+        });
+
+        sec.appendChild(nameList);
+        body.appendChild(sec);
+      });
+
+      col.appendChild(body);
+      cols.appendChild(col);
+    });
+
+    container.appendChild(cols);
+  });
+}
+
+// ── 뷰3: 표 형식 ──
+function renderArTable(container, filterGrade, filterEvent) {
+  const wrapper = document.createElement('div');
+  wrapper.className = 'roster-table-view table-wrapper';
+
+  const table = document.createElement('table');
+  table.innerHTML = `
+    <thead>
+      <tr>
+        <th>학년</th>
+        <th>종목</th>
+        <th>역할(슬롯)</th>
+        <th><span class="chip-blue">🔵 청팀</span></th>
+        <th><span class="chip-white">⚪ 백팀</span></th>
+      </tr>
+    </thead>
+  `;
+  const tbody = document.createElement('tbody');
+
+  const grades = filterGrade === 'all' ? ['1학년', '2학년', '3학년'] : [filterGrade];
+  const rosterEvents = officialEvents.filter(ev =>
+    ev.type === 'roster' && (filterEvent === 'all' || ev.name === filterEvent)
+  );
+
+  let rowCount = 0;
+  grades.forEach(grade => {
+    rosterEvents.forEach(ev => {
+      let slots = ev.slots || [];
+      if (ev.name === '다산 한마음 계주') {
+        // 표 뷰에서는 다산 계주를 요약으로
+        const blueSpec = classGenderSpecs[grade]?.['청팀(1반팀)'];
+        const whiteSpec = classGenderSpecs[grade]?.['백팀(2반팀)'];
+        const blueData = currentRoster[grade]?.['청팀(1반팀)']?.[ev.name] || {};
+        const whiteData = currentRoster[grade]?.['백팀(2반팀)']?.[ev.name] || {};
+        const blueNames = Object.values(blueData).filter(Boolean);
+        const whiteNames = Object.values(whiteData).filter(Boolean);
+
+        const tr = document.createElement('tr');
+        if (rowCount % 2 === 0) tr.style.background = '#fafafa';
+        tr.innerHTML = `
+          <td><strong>${grade}</strong></td>
+          <td>${ev.name}</td>
+          <td style="color:var(--text-muted);font-size:11px;">전원 (${blueSpec?.total || '?'}명)</td>
+          <td>${blueNames.length > 0 ? `<span class="chip-blue">${blueNames.length}명 등록</span>` : '<span style="color:#94a3b8;font-size:12px;">미입력</span>'}</td>
+          <td>${whiteNames.length > 0 ? `<span class="chip-white">${whiteNames.length}명 등록</span>` : '<span style="color:#94a3b8;font-size:12px;">미입력</span>'}</td>
+        `;
+        tbody.appendChild(tr);
+        rowCount++;
+        return;
+      }
+
+      slots.forEach(slot => {
+        const blueName  = currentRoster[grade]?.['청팀(1반팀)']?.[ev.name]?.[slot] || '';
+        const whiteName = currentRoster[grade]?.['백팀(2반팀)']?.[ev.name]?.[slot] || '';
+
+        const tr = document.createElement('tr');
+        if (rowCount % 2 === 0) tr.style.background = '#fafafa';
+        tr.innerHTML = `
+          <td><strong>${grade}</strong></td>
+          <td>${ev.name}</td>
+          <td style="color:var(--text-muted);font-size:12px;">${slot}</td>
+          <td>${blueName  ? `<span class="chip-blue">${blueName}</span>`  : '<span style="color:#94a3b8;font-size:12px;">미입력</span>'}</td>
+          <td>${whiteName ? `<span class="chip-white">${whiteName}</span>` : '<span style="color:#94a3b8;font-size:12px;">미입력</span>'}</td>
+        `;
+        tbody.appendChild(tr);
+        rowCount++;
+      });
+    });
+  });
+
+  if (rowCount === 0) {
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:20px;color:#94a3b8;">데이터가 없습니다.</td></tr>';
+  }
+
+  table.appendChild(tbody);
+  wrapper.appendChild(table);
+  container.appendChild(wrapper);
+}
+
+// =====================================================
 // 초기화
 // =====================================================
 window.addEventListener('load', () => {
@@ -948,7 +1475,6 @@ window.addEventListener('load', () => {
 // Supabase Realtime 실시간 구독
 // =====================================================
 function startRealtimeSync() {
-  // 명단(roster) 실시간 구독
   db.channel('roster-changes')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'roster' }, (payload) => {
       setSyncStatus('syncing', '🔄 다른 반에서 명단 업데이트 중...');
@@ -965,12 +1491,15 @@ function startRealtimeSync() {
         currentRoster[row.grade][row.team][row.event_name][row.slot] = row.student_name || '';
       }
       renderRosterForm();
+      // 청백명단 탭이 열려 있으면 자동 갱신
+      if (document.getElementById('tab-allroster').classList.contains('active')) {
+        renderAllRoster();
+      }
       setSyncStatus('ok', '✅ 실시간 동기화됨 — ' + new Date().toLocaleTimeString('ko-KR'));
       showToast('📋 다른 반의 출전 명단이 업데이트되었습니다.');
     })
     .subscribe();
 
-  // 학부모(parents) 실시간 구독
   db.channel('parents-changes')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'parents' }, (payload) => {
       setSyncStatus('syncing', '🔄 학부모 명단 업데이트 중...');
@@ -992,7 +1521,6 @@ function startRealtimeSync() {
     })
     .subscribe();
 
-  // 점수(scores) 실시간 구독
   db.channel('scores-changes')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'scores' }, (payload) => {
       const row = payload.new;
@@ -1008,7 +1536,7 @@ function startRealtimeSync() {
 }
 
 // =====================================================
-// 토스트 알림 (우하단 팝업)
+// 토스트 알림
 // =====================================================
 function showToast(msg) {
   let toast = document.getElementById('realtimeToast');
