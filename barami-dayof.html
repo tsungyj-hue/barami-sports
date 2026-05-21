@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>바래미 체육 한마당 — 당일</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=Bebas+Neue&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --blue: #1a56db; --blue-light: #e8f0fd; --blue-dark: #0f3a9e;
+    --bg: #f4f5f8; --surface: #ffffff; --border: #e2e4ea;
+    --text: #111827; --text-sub: #6b7280; --text-hint: #9ca3af;
+    --radius: 16px; --radius-sm: 10px;
+    --active-glow: 0 0 0 3px rgba(26,86,219,0.2);
+  }
+  body { font-family: 'Noto Sans KR', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; -webkit-font-smoothing: antialiased; }
+
+  /* HEADER */
+  .header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 1rem; position: sticky; top: 0; z-index: 100; }
+  .header-inner { max-width: 600px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; height: 56px; }
+  .header-title { font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: .04em; color: var(--blue); line-height: 1; }
+  .header-date { font-size: 12px; color: var(--text-sub); font-weight: 500; }
+  .live-clock { display: flex; align-items: center; gap: 6px; }
+  .live-dot-el { width: 7px; height: 7px; border-radius: 50%; background: #e53e3e; animation: pulse 1.4s infinite; }
+  .clock-time { font-size: 15px; font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(.85)} }
+
+  /* SYNC BAR */
+  .sync-bar { max-width: 600px; margin: 0 auto; padding: 5px 1rem; display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 500; }
+  .sync-bar.ok    { color: #16a34a; }
+  .sync-bar.err   { color: #dc2626; }
+  .sync-bar.syncing { color: #b45309; }
+  .sync-icon { font-size: 13px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .spin { display: inline-block; animation: spin .8s linear infinite; }
+
+  /* TAB BAR */
+  .tab-bar { background: var(--surface); border-bottom: 1px solid var(--border); position: sticky; top: 56px; z-index: 99; }
+  .tab-bar-inner { max-width: 600px; margin: 0 auto; display: flex; }
+  .tab-btn { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 10px 4px; background: none; border: none; border-bottom: 2.5px solid transparent; cursor: pointer; font-family: inherit; color: var(--text-hint); font-size: 11px; font-weight: 500; transition: color .15s, border-color .15s; }
+  .tab-btn svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .tab-btn.active { color: var(--blue); border-bottom-color: var(--blue); }
+
+  /* CONTENT */
+  .content { max-width: 600px; margin: 0 auto; padding: 1rem; }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* ── TIMELINE ── */
+  .now-chip { display: inline-flex; align-items: center; gap: 6px; background: var(--surface); border: 1px solid var(--border); border-radius: 99px; padding: 5px 14px; font-size: 12px; font-weight: 500; color: var(--text-sub); margin-bottom: 1.25rem; }
+  .now-chip-dot { width: 7px; height: 7px; border-radius: 50%; background: #f97316; animation: pulse 1.4s infinite; flex-shrink: 0; }
+  .legend { display: flex; gap: 12px; margin-bottom: 1.25rem; flex-wrap: wrap; }
+  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-sub); }
+  .leg-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+  .leg-done { background: #22c55e; } .leg-current { background: var(--blue); } .leg-upcoming { background: var(--border); }
+
+  .timeline { position: relative; padding-left: 2rem; }
+  .tl-line { position: absolute; left: .9rem; top: .6rem; bottom: 0; width: 2px; background: var(--border); }
+  .tl-item { position: relative; margin-bottom: .75rem; }
+  .tl-dot { position: absolute; left: -1.55rem; top: 1rem; width: 12px; height: 12px; border-radius: 50%; background: var(--border); border: 2px solid var(--surface); transition: background .2s; }
+  .tl-item.done .tl-dot { background: #22c55e; }
+  .tl-item.current .tl-dot { background: var(--blue); box-shadow: 0 0 0 4px rgba(26,86,219,.18); animation: pulse 1.4s infinite; }
+  .tl-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; }
+  .tl-item.current .tl-card { border-color: var(--blue); box-shadow: var(--active-glow); }
+  .tl-item.done .tl-card { opacity: .6; }
+  .tl-header { display: flex; align-items: center; justify-content: space-between; padding: .8rem 1rem; cursor: pointer; user-select: none; gap: .5rem; }
+  .tl-header:hover { background: var(--bg); }
+  .tl-left { flex: 1; min-width: 0; }
+  .tl-order { font-size: 10px; font-weight: 700; letter-spacing: .08em; color: var(--text-hint); margin-bottom: 2px; }
+  .tl-item.current .tl-order { color: var(--blue); }
+  .tl-title { font-size: 14px; font-weight: 600; line-height: 1.35; }
+  .tl-sub { font-size: 12px; color: var(--text-sub); margin-top: 2px; }
+  .tl-badges { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 6px; }
+  .tl-badge { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 99px; letter-spacing: .04em; }
+  .badge-done  { background: #dcfce7; color: #166534; }
+  .badge-now   { background: var(--blue-light); color: var(--blue-dark); }
+  .badge-lunch { background: #fef9c3; color: #854d0e; }
+  .badge-pts   { background: var(--bg); color: var(--text-sub); border: 1px solid var(--border); }
+  .tl-chevron { font-size: 14px; color: var(--text-hint); transition: transform .2s; flex-shrink: 0; }
+  .tl-item.open .tl-chevron { transform: rotate(180deg); }
+  .tl-body { display: none; border-top: 1px solid var(--border); }
+  .tl-item.open .tl-body { display: block; }
+  .tl-roster-cols { display: grid; grid-template-columns: 1fr 1fr; }
+  .tl-roster-col { padding: .75rem 1rem; }
+  .tl-roster-col:first-child { border-right: 1px solid var(--border); }
+  .tl-col-title { font-size: 11px; font-weight: 700; letter-spacing: .06em; margin-bottom: .5rem; }
+  .tl-col-title.blue { color: var(--blue); } .tl-col-title.white { color: #555577; }
+  .tl-player-list { list-style: none; }
+  .tl-player-list li { font-size: 13px; padding: 3px 0; border-bottom: .5px solid var(--border); display: flex; align-items: center; gap: 6px; }
+  .tl-player-list li:last-child { border-bottom: none; }
+  .player-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--text-hint); flex-shrink: 0; }
+  .dot-f { background: #ec4899; } .dot-m { background: #3b82f6; }
+  .player-grade { font-size: 10px; color: var(--text-hint); margin-left: auto; }
+  .runner-num { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border-radius: 50%; background: var(--bg); border: 1px solid var(--border); font-size: 10px; font-weight: 700; color: var(--text-sub); flex-shrink: 0; }
+  .relay2-grade-block { border-bottom: 1px solid var(--border); }
+  .relay2-grade-block:last-child { border-bottom: none; }
+  .relay2-grade-label { font-size: 11px; font-weight: 700; letter-spacing: .08em; color: var(--text-hint); background: var(--bg); padding: 5px 1rem; border-bottom: 1px solid var(--border); }
+
+  /* ── SCORE ── */
+  .score-header { background: linear-gradient(135deg,#0f3a9e,#1a56db); border-radius: var(--radius); padding: 1.5rem; color: white; margin-bottom: 1rem; position: relative; overflow: hidden; }
+  .score-header::before { content:'🏆'; position:absolute; right:1rem; top:50%; transform:translateY(-50%); font-size:64px; opacity:.12; }
+  .score-label { font-size: 11px; font-weight: 700; letter-spacing: .1em; opacity: .7; margin-bottom: 1rem; }
+  .score-board { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 1rem; }
+  .team-score { text-align: center; }
+  .team-name { font-size: 13px; font-weight: 700; opacity: .85; margin-bottom: 4px; }
+  .team-pts { font-family: 'Bebas Neue', sans-serif; font-size: 56px; line-height: 1; letter-spacing: .02em; }
+  .team-pts.blue { color: #93c5fd; } .team-pts.white { color: #e2e8f0; }
+  .vs { font-family: 'Bebas Neue', sans-serif; font-size: 24px; opacity: .5; }
+  .score-bar-wrap { margin-top: 1rem; }
+  .score-bar { height: 6px; border-radius: 99px; background: rgba(255,255,255,.15); overflow: hidden; }
+  .score-bar-fill { height: 100%; background: #93c5fd; border-radius: 99px; transition: width .6s cubic-bezier(.4,0,.2,1); }
+  .score-bar-hint { display: flex; justify-content: space-between; font-size: 10px; opacity: .55; margin-top: 4px; }
+  .events-title { font-size: 13px; font-weight: 700; color: var(--text-sub); letter-spacing: .05em; margin: 1.25rem 0 .75rem; }
+  .event-row { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: .85rem 1rem; display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: .5rem; margin-bottom: .5rem; }
+  .event-row.done { opacity: .6; }
+  .event-name { font-size: 14px; font-weight: 500; }
+  .event-scores { display: flex; gap: 8px; align-items: center; }
+  .event-score { width: 36px; text-align: center; font-size: 14px; font-weight: 700; }
+  .event-score.blue { color: #1a56db; } .event-score.white { color: #555577; }
+
+  /* ── SEARCH ── */
+  .search-box { background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--radius-sm); display: flex; align-items: center; gap: 8px; padding: 0 1rem; margin-bottom: 1rem; transition: border-color .15s, box-shadow .15s; }
+  .search-box:focus-within { border-color: var(--blue); box-shadow: var(--active-glow); }
+  .search-box svg { width: 18px; height: 18px; stroke: var(--text-hint); flex-shrink: 0; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .search-box input { flex: 1; border: none; outline: none; font-family: inherit; font-size: 15px; color: var(--text); background: transparent; padding: .8rem 0; }
+  .search-box input::placeholder { color: var(--text-hint); }
+  .search-clear { background: none; border: none; cursor: pointer; color: var(--text-hint); font-size: 18px; line-height: 1; padding: 0 2px; display: none; }
+  .sub-tabs { display: flex; border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; margin-bottom: 1rem; }
+  .sub-tab { flex: 1; font-family: inherit; font-size: 13px; font-weight: 500; padding: 8px 4px; border: none; background: var(--surface); color: var(--text-sub); cursor: pointer; transition: all .15s; border-right: 1px solid var(--border); }
+  .sub-tab:last-child { border-right: none; }
+  .sub-tab.on { background: var(--blue); color: white; }
+  .roster-event { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); margin-bottom: .75rem; overflow: hidden; }
+  .roster-event-header { display: flex; align-items: center; justify-content: space-between; padding: .75rem 1rem; cursor: pointer; user-select: none; }
+  .roster-event-header:hover { background: var(--bg); }
+  .roster-event-name { font-size: 14px; font-weight: 600; }
+  .roster-event-meta { font-size: 12px; color: var(--text-sub); margin-top: 1px; }
+  .roster-chevron { font-size: 16px; color: var(--text-hint); transition: transform .2s; flex-shrink: 0; }
+  .roster-event.open .roster-chevron { transform: rotate(180deg); }
+  .roster-body { display: none; border-top: 1px solid var(--border); }
+  .roster-event.open .roster-body { display: block; }
+  .roster-cols { display: grid; grid-template-columns: 1fr 1fr; }
+  .roster-col { padding: .75rem 1rem; }
+  .roster-col:first-child { border-right: 1px solid var(--border); }
+  .roster-col-title { font-size: 11px; font-weight: 700; letter-spacing: .06em; margin-bottom: .6rem; }
+  .roster-col-title.blue { color: var(--blue); } .roster-col-title.white { color: #555577; }
+  .roster-name-list { list-style: none; }
+  .roster-name-list li { font-size: 13px; color: var(--text); padding: 3px 0; border-bottom: .5px solid var(--border); display: flex; align-items: center; gap: 6px; }
+  .roster-name-list li:last-child { border-bottom: none; }
+  .roster-grade-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--text-hint); flex-shrink: 0; }
+  .roster-grade { font-size: 10px; color: var(--text-hint); margin-left: auto; }
+  .result-count { font-size: 12px; color: var(--text-hint); margin-bottom: .75rem; }
+  .student-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: .85rem 1rem; margin-bottom: .5rem; display: grid; grid-template-columns: auto 1fr; gap: .75rem; align-items: start; }
+  .student-avatar { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex-shrink: 0; }
+  .avatar-blue { background: var(--blue-light); color: var(--blue-dark); }
+  .avatar-gray { background: #f1f5f9; color: #475569; }
+  .student-name-row { font-size: 14px; font-weight: 600; margin-bottom: 3px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .student-meta { font-size: 12px; color: var(--text-sub); }
+  .student-events { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+  .ev-tag { font-size: 11px; padding: 2px 8px; border-radius: 99px; background: var(--bg); color: var(--text-sub); border: 1px solid var(--border); }
+  .team-tag { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 99px; }
+  .team-tag.blue { background: var(--blue-light); color: var(--blue-dark); }
+  .team-tag.white { background: #f1f5f9; color: #475569; }
+  .empty-state { text-align: center; padding: 3rem 1rem; color: var(--text-hint); }
+  .empty-state svg { width: 40px; height: 40px; margin: 0 auto .75rem; display: block; stroke: var(--text-hint); fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+  .empty-state p { font-size: 14px; }
+
+  /* Toast */
+  #toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #1e40af; color: white; padding: 10px 20px; border-radius: 99px; font-size: 13px; font-weight: 600; box-shadow: 0 4px 12px rgba(0,0,0,.2); opacity: 0; transition: opacity .4s; pointer-events: none; white-space: nowrap; z-index: 9999; }
+  #toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-inner">
+    <div>
+      <div class="header-title">바래미 체육 한마당</div>
+      <div class="header-date">2026년 5월 22일(금)</div>
+    </div>
+    <div class="live-clock">
+      <div class="live-dot-el"></div>
+      <div class="clock-time" id="clock">--:--</div>
+    </div>
+  </div>
+</header>
+<div class="sync-bar syncing" id="syncBar">
+  <span class="sync-icon spin" id="syncIcon">⟳</span>
+  <span id="syncText">서버 연결 중...</span>
+</div>
+
+<nav class="tab-bar">
+  <div class="tab-bar-inner">
+    <button class="tab-btn active" onclick="switchTab('timeline',this)">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>타임라인
+    </button>
+    <button class="tab-btn" onclick="switchTab('score',this)">
+      <svg viewBox="0 0 24 24"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>점수 현황
+    </button>
+    <button class="tab-btn" onclick="switchTab('search',this)">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>명단 검색
+    </button>
+  </div>
+</nav>
+
+<main class="content">
+
+  <!-- ── 타임라인 ── -->
+  <div class="tab-panel active" id="tab-timeline">
+    <div class="now-chip">
+      <div class="now-chip-dot"></div>
+      <span>현재 진행 중: <strong id="current-event-name">불러오는 중...</strong></span>
+    </div>
+    <div class="legend">
+      <div class="legend-item"><div class="leg-dot leg-done"></div>완료</div>
+      <div class="legend-item"><div class="leg-dot leg-current"></div>진행중</div>
+      <div class="legend-item"><div class="leg-dot leg-upcoming"></div>대기</div>
+    </div>
+    <div class="timeline">
+      <div class="tl-line"></div>
+      <div id="timeline-list"></div>
+    </div>
+  </div>
+
+  <!-- ── 점수 ── -->
+  <div class="tab-panel" id="tab-score">
+    <div class="score-header">
+      <div class="score-label">종합 점수 현황</div>
+      <div class="score-board">
+        <div class="team-score">
+          <div class="team-name">🔵 청팀 (1반)</div>
+          <div class="team-pts blue" id="blue-total">0</div>
+        </div>
+        <div class="vs">VS</div>
+        <div class="team-score">
+          <div class="team-name">⚪ 백팀 (2반)</div>
+          <div class="team-pts white" id="white-total">0</div>
+        </div>
+      </div>
+      <div class="score-bar-wrap">
+        <div class="score-bar"><div class="score-bar-fill" id="score-bar-fill" style="width:50%"></div></div>
+        <div class="score-bar-hint"><span>청팀 우세</span><span>백팀 우세</span></div>
+      </div>
+    </div>
+    <div class="events-title">종목별 결과</div>
+    <div id="events-list"></div>
+  </div>
+
+  <!-- ── 명단 검색 ── -->
+  <div class="tab-panel" id="tab-search">
+    <div class="search-box">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="search-input" placeholder="이름으로 검색..." oninput="onSearchInput()">
+      <button class="search-clear" id="search-clear" onclick="clearSearch()">✕</button>
+    </div>
+    <div id="search-result-area" style="display:none;">
+      <div class="result-count" id="result-count"></div>
+      <div id="search-results"></div>
+    </div>
+    <div id="roster-area">
+      <div class="sub-tabs">
+        <button class="sub-tab on" onclick="switchRoster('all',this)">전체</button>
+        <button class="sub-tab" onclick="switchRoster('blue',this)">🔵 청팀</button>
+        <button class="sub-tab" onclick="switchRoster('white',this)">⚪ 백팀</button>
+      </div>
+      <div id="roster-list"></div>
+    </div>
+  </div>
+
+</main>
+<div id="toast"></div>
+
+<script>
+/* ════════════════════════════════
+   Supabase 초기화
+════════════════════════════════ */
+const SUPABASE_URL  = 'https://vdheulzqesamqcbebyej.supabase.co';
+const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZkaGV1bHpxZXNhbXFjYmVieWVqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxMzY1NDksImV4cCI6MjA5NDcxMjU0OX0.cK2czWZvpUKVtMnBRy14FL34eGFoG8SOJIgEBaskWEI';
+const { createClient } = supabase;
+const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+/* ════════════════════════════════
+   상태
+════════════════════════════════ */
+let currentRoster = {}; // { grade: { team: { event_name: { slot: name } } } }
+let matchScores   = {}; // { event_name: { blue, white } }
+
+/* ════════════════════════════════
+   종목 정의 (메인 앱과 동일)
+════════════════════════════════ */
+const classGenderSpecs = {
+  "1학년": { "청팀(1반팀)":{ male:13, female:10, total:23 }, "백팀(2반팀)":{ male:13, female:9, total:22 } },
+  "2학년": { "청팀(1반팀)":{ male:12, female:12, total:24 }, "백팀(2반팀)":{ male:12, female:12, total:24 } },
+  "3학년": { "청팀(1반팀)":{ male:10, female:15, total:25 }, "백팀(2반팀)":{ male:10, female:15, total:25 } }
+};
+
+const SCORE_EVENTS = [
+  { name:"OX 퀴즈",               pts:"100/80" },
+  { name:"파도를 넘어서",          pts:"100/80" },
+  { name:"고무신 양궁",            pts:"100/80" },
+  { name:"단체 줄넘기",            pts:"100/70" },
+  { name:"지구 나르기",            pts:"100/70" },
+  { name:"대형 에어 타이어 릴레이",pts:"100/70" },
+  { name:"토끼와 거북이",          pts:"100/80" },
+  { name:"장대를 높여라",          pts:"100/80" },
+  { name:"대표 계주",              pts:"200/150"},
+  { name:"리셋 미션 레이스",       pts:"100/80" },
+  { name:"학년별 줄다리기",        pts:"200/150"},
+  { name:"다산 한마음 계주",       pts:"200/150"},
+];
+
+// 타임라인 순서 (시간 없음)
+const SCHEDULE = [
+  { id:'open',   title:'개회식',                   sub:'개식 → 국민의례 → 선서',       place:'운동장', type:'done',    eventName:null,                    roster:false },
+  { id:'warm',   title:'준비체조',                  sub:'전체 워밍업',                  place:'운동장', type:'done',    eventName:null,                    roster:false },
+  { id:'ox',     title:'OX 퀴즈',                  sub:'전체 참가',                    place:'운동장', type:'done',    eventName:'OX 퀴즈',               roster:false },
+  { id:'wave',   title:'파도를 넘어서',             sub:'',                             place:'운동장', type:'done',    eventName:'파도를 넘어서',          roster:true,  slots:['줄잡이 1','줄잡이 2'] },
+  { id:'arch',   title:'고무신 양궁',              sub:'',                             place:'운동장', type:'done',    eventName:'고무신 양궁',            roster:true,  slots:['남학생 대표 1','남학생 대표 2','여학생 대표 1','여학생 대표 2','담임선생님'] },
+  { id:'jump',   title:'단체 줄넘기',              sub:'',                             place:'운동장', type:'done',    eventName:'단체 줄넘기',            roster:true,  slots:['줄잡이 1','줄잡이 2','남 주자 1','남 주자 2','남 주자 3','남 주자 4','남 주자 5','여 주자 1','여 주자 2','여 주자 3','여 주자 4','여 주자 5'] },
+  { id:'earth',  title:'지구 나르기',              sub:'',                             place:'운동장', type:'current', eventName:'지구 나르기',            roster:false },
+  { id:'tire',   title:'대형 에어 타이어 릴레이',  sub:'',                             place:'운동장', type:'upcoming',eventName:'대형 에어 타이어 릴레이',roster:true,  slots:['남 주자 1','남 주자 2','남 주자 3','여 주자 1','여 주자 2','여 주자 3'] },
+  { id:'rabbit', title:'토끼와 거북이',            sub:'',                             place:'운동장', type:'upcoming',eventName:'토끼와 거북이',          roster:true,  slots:['남 주자 1','남 주자 2','남 주자 3','남 주자 4','여 주자 1','여 주자 2','여 주자 3','여 주자 4'] },
+  { id:'pole',   title:'장대를 높여라',            sub:'',                             place:'운동장', type:'upcoming',eventName:'장대를 높여라',          roster:false },
+  { id:'relay1', title:'대표 계주',                sub:'',                             place:'운동장', type:'upcoming',eventName:'대표 계주',              roster:true,  slots:['남학생 주자','여학생 주자','남교사 대표','여교사 대표'] },
+  { id:'lunch',  title:'🍱 점심시간',              sub:'급식실 이동',                  place:'급식실', type:'upcoming',eventName:null,                    roster:false },
+  { id:'reset',  title:'리셋 미션 레이스',         sub:'',                             place:'운동장', type:'upcoming',eventName:'리셋 미션 레이스',       roster:true,  slots:['남학생 대표','여학생 대표'] },
+  { id:'tugwar', title:'학년별 줄다리기',          sub:'',                             place:'운동장', type:'upcoming',eventName:'학년별 줄다리기',        roster:false },
+  { id:'relay2', title:'다산 한마음 계주',         sub:'전교생 피날레 릴레이',         place:'운동장', type:'upcoming',eventName:'다산 한마음 계주',       roster:true,  isRelay2:true },
+  { id:'close',  title:'럭키드로우 · 폐회식 · 시상',sub:'종합 시상 및 정리',          place:'운동장', type:'upcoming',eventName:null,                    roster:false },
+];
+
+/* ════════════════════════════════
+   동기화 상태 표시
+════════════════════════════════ */
+function setSyncStatus(state, msg) {
+  const bar  = document.getElementById('syncBar');
+  const icon = document.getElementById('syncIcon');
+  const text = document.getElementById('syncText');
+  bar.className = 'sync-bar ' + state;
+  text.textContent = msg;
+  if (state === 'syncing') { icon.textContent = '⟳'; icon.classList.add('spin'); }
+  else { icon.classList.remove('spin'); icon.textContent = state === 'ok' ? '✅' : '❌'; }
+}
+
+/* ════════════════════════════════
+   시계
+════════════════════════════════ */
+function updateClock() {
+  const now = new Date();
+  document.getElementById('clock').textContent =
+    String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+}
+updateClock(); setInterval(updateClock, 10000);
+
+/* ════════════════════════════════
+   탭 전환
+════════════════════════════════ */
+function switchTab(id, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  btn.classList.add('active');
+}
+
+/* ════════════════════════════════
+   데이터 로드
+════════════════════════════════ */
+async function loadData() {
+  setSyncStatus('syncing', '서버 연결 중...');
+  try {
+    const [{ data: rosterRows, error: rErr }, { data: scoreRows, error: sErr }] = await Promise.all([
+      db.from('roster').select('*'),
+      db.from('scores').select('*'),
+    ]);
+    if (rErr) throw rErr;
+    if (sErr) throw sErr;
+
+    // roster 파싱
+    currentRoster = {};
+    (rosterRows || []).forEach(row => {
+      if (!currentRoster[row.grade]) currentRoster[row.grade] = {};
+      if (!currentRoster[row.grade][row.team]) currentRoster[row.grade][row.team] = {};
+      if (!currentRoster[row.grade][row.team][row.event_name]) currentRoster[row.grade][row.team][row.event_name] = {};
+      currentRoster[row.grade][row.team][row.event_name][row.slot] = row.student_name || '';
+    });
+
+    // scores 파싱
+    matchScores = {};
+    SCORE_EVENTS.forEach(ev => { matchScores[ev.name] = { blue: 0, white: 0 }; });
+    (scoreRows || []).forEach(row => { matchScores[row.event_name] = { blue: row.blue || 0, white: row.white || 0 }; });
+
+    setSyncStatus('ok', '실시간 연동 중 — ' + new Date().toLocaleTimeString('ko-KR'));
+    renderAll();
+    startRealtime();
+  } catch(e) {
+    setSyncStatus('err', '연결 실패: ' + e.message);
+  }
+}
+
+/* ════════════════════════════════
+   Realtime 구독
+════════════════════════════════ */
+function startRealtime() {
+  // roster 변경
+  db.channel('dayof-roster')
+    .on('postgres_changes', { event:'*', schema:'public', table:'roster' }, payload => {
+      if (payload.eventType === 'DELETE') {
+        const o = payload.old;
+        if (currentRoster[o.grade]?.[o.team]?.[o.event_name])
+          delete currentRoster[o.grade][o.team][o.event_name][o.slot];
+      } else {
+        const r = payload.new;
+        if (!currentRoster[r.grade]) currentRoster[r.grade] = {};
+        if (!currentRoster[r.grade][r.team]) currentRoster[r.grade][r.team] = {};
+        if (!currentRoster[r.grade][r.team][r.event_name]) currentRoster[r.grade][r.team][r.event_name] = {};
+        currentRoster[r.grade][r.team][r.event_name][r.slot] = r.student_name || '';
+      }
+      renderTimeline(); renderRoster();
+      setSyncStatus('ok', '명단 업데이트됨 — ' + new Date().toLocaleTimeString('ko-KR'));
+      showToast('📋 선수 명단이 업데이트되었습니다');
+    }).subscribe();
+
+  // scores 변경
+  db.channel('dayof-scores')
+    .on('postgres_changes', { event:'*', schema:'public', table:'scores' }, payload => {
+      const r = payload.new;
+      if (r) matchScores[r.event_name] = { blue: r.blue || 0, white: r.white || 0 };
+      renderScore();
+      setSyncStatus('ok', '점수 업데이트됨 — ' + new Date().toLocaleTimeString('ko-KR'));
+      showToast('📊 점수가 업데이트되었습니다');
+    }).subscribe();
+}
+
+/* ════════════════════════════════
+   전체 렌더
+════════════════════════════════ */
+function renderAll() { renderTimeline(); renderScore(); renderRoster(); }
+
+/* ════════════════════════════════
+   타임라인 렌더
+════════════════════════════════ */
+function renderTimeline() {
+  const cur = SCHEDULE.find(s => s.type === 'current');
+  document.getElementById('current-event-name').textContent = cur ? cur.title : '-';
+
+  let orderNum = 0;
+  document.getElementById('timeline-list').innerHTML = SCHEDULE.map(s => {
+    const isDone = s.type === 'done', isCurrent = s.type === 'current';
+    const cls = isDone ? 'done' : isCurrent ? 'current' : 'upcoming';
+
+    let orderLabel = '';
+    if (s.eventName && SCORE_EVENTS.find(e => e.name === s.eventName)) { orderNum++; orderLabel = `${orderNum}번째 종목 · ${s.place}`; }
+    else if (s.id === 'open') orderLabel = `행사 시작 · ${s.place}`;
+    else if (s.id === 'warm') orderLabel = `준비 · ${s.place}`;
+    else if (s.id === 'lunch') orderLabel = `휴식 · ${s.place}`;
+    else if (s.id === 'close') orderLabel = `마무리 · ${s.place}`;
+    else orderLabel = s.place;
+
+    let badges = '';
+    if (isDone)    badges += `<span class="tl-badge badge-done">완료</span>`;
+    if (isCurrent) badges += `<span class="tl-badge badge-now">진행중</span>`;
+    if (s.id === 'lunch') badges += `<span class="tl-badge badge-lunch">점심</span>`;
+    const scoreEv = s.eventName ? SCORE_EVENTS.find(e => e.name === s.eventName) : null;
+    if (scoreEv)   badges += `<span class="tl-badge badge-pts">배점 ${scoreEv.pts}</span>`;
+
+    const bodyHtml = buildTlBody(s);
+    const hasBody = bodyHtml !== '';
+    const chevron = hasBody ? `<span class="tl-chevron">▾</span>` : '';
+    const clickAttr = hasBody ? `onclick="toggleTl('tl-${s.id}')"` : '';
+    const autoOpen = isCurrent && hasBody ? 'open' : '';
+
+    return `
+      <div class="tl-item ${cls} ${autoOpen}" id="tl-${s.id}">
+        <div class="tl-dot"></div>
+        <div class="tl-card">
+          <div class="tl-header" ${clickAttr}>
+            <div class="tl-left">
+              <div class="tl-order">${orderLabel}</div>
+              <div class="tl-title">${s.title}</div>
+              ${s.sub ? `<div class="tl-sub">${s.sub}</div>` : ''}
+              <div class="tl-badges">${badges}</div>
+            </div>
+            ${chevron}
+          </div>
+          ${bodyHtml}
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function buildTlBody(s) {
+  if (!s.roster) return '';
+  const grades = ['1학년', '2학년', '3학년'];
+
+  if (s.isRelay2) {
+    // 다산 한마음 계주: 학년별 구분 + 주자 번호 + 여남 점
+    const blocks = grades.map(grade => {
+      const makeCol = (team, isBlue) => {
+        const spec = classGenderSpecs[grade]?.[team];
+        if (!spec) return '';
+        const total = spec.total;
+        let items = '';
+        // 여-남-여-남 순서로 주자 배치
+        let f = spec.female, m = spec.male, nextF = true;
+        for (let i = 1; i <= total; i++) {
+          let gender, gLabel;
+          if (nextF)  { gender = f > 0 ? 'f' : 'm'; if (f > 0) f--; else m--; }
+          else        { gender = m > 0 ? 'm' : 'f'; if (m > 0) m--; else f--; }
+          nextF = !nextF;
+          gLabel = gender === 'f' ? '여' : '남';
+          const slotKey = `주자 ${i}번`;
+          const name = currentRoster[grade]?.[team]?.[s.eventName]?.[slotKey] || '';
+          const dotCls = gender === 'f' ? 'dot-f' : 'dot-m';
+          items += `<li><span class="runner-num">${i}</span><div class="player-dot ${dotCls}"></div>${name || '<span style="color:var(--text-hint)">미정</span>'}<span class="player-grade">${gLabel} ${grade.replace('학년','')}</span></li>`;
+        }
+        return `
+          <div class="tl-roster-col">
+            <div class="tl-col-title ${isBlue ? 'blue' : 'white'}">${isBlue ? '🔵 청팀' : '⚪ 백팀'}</div>
+            <ul class="tl-player-list">${items}</ul>
+          </div>`;
+      };
+      return `
+        <div class="relay2-grade-block">
+          <div class="relay2-grade-label">${grade}</div>
+          <div class="tl-roster-cols">
+            ${makeCol('청팀(1반팀)', true)}
+            ${makeCol('백팀(2반팀)', false)}
+          </div>
+        </div>`;
+    }).join('');
+    return `<div class="tl-body">${blocks}</div>`;
+  }
+
+  // 일반 종목: 학년별 로 묶어서 표시
+  if (!s.eventName || !s.slots) return '';
+
+  const blocks = grades.map(grade => {
+    const makeCol = (team, isBlue) => {
+      const items = s.slots.map(slot => {
+        const name = currentRoster[grade]?.[team]?.[s.eventName]?.[slot] || '';
+        return `<li><div class="player-dot"></div>${name || '<span style="color:var(--text-hint)">미정</span>'}<span class="player-grade">${slot}</span></li>`;
+      }).join('');
+      return `
+        <div class="tl-roster-col">
+          <div class="tl-col-title ${isBlue ? 'blue' : 'white'}">${isBlue ? '🔵 청팀' : '⚪ 백팀'}</div>
+          <ul class="tl-player-list">${items}</ul>
+        </div>`;
+    };
+    return `
+      <div class="relay2-grade-block">
+        <div class="relay2-grade-label">${grade}</div>
+        <div class="tl-roster-cols">
+          ${makeCol('청팀(1반팀)', true)}
+          ${makeCol('백팀(2반팀)', false)}
+        </div>
+      </div>`;
+  }).join('');
+
+  return `<div class="tl-body">${blocks}</div>`;
+}
+
+function toggleTl(id) { document.getElementById(id).classList.toggle('open'); }
+
+/* ════════════════════════════════
+   점수 렌더
+════════════════════════════════ */
+function renderScore() {
+  let b = 0, w = 0;
+  Object.values(matchScores).forEach(s => { b += s.blue; w += s.white; });
+  document.getElementById('blue-total').textContent  = b;
+  document.getElementById('white-total').textContent = w;
+  const total = b + w;
+  document.getElementById('score-bar-fill').style.width = (total === 0 ? 50 : Math.round(b/total*100)) + '%';
+
+  document.getElementById('events-list').innerHTML = SCORE_EVENTS.map(ev => {
+    const sc = matchScores[ev.name] || { blue:0, white:0 };
+    const hasScore = sc.blue > 0 || sc.white > 0;
+    let winner = '';
+    if (hasScore) {
+      if (sc.blue > sc.white) winner = '<span style="color:#1a56db;font-size:11px;">🔵 청팀</span>';
+      else if (sc.white > sc.blue) winner = '<span style="color:#555577;font-size:11px;">⚪ 백팀</span>';
+      else winner = '<span style="font-size:11px;color:#6b7280;">동점</span>';
+    }
+    return `
+      <div class="event-row ${hasScore ? 'done' : ''}">
+        <div>
+          <div class="event-name">${ev.name}</div>
+          <div style="font-size:11px;margin-top:2px;">${hasScore ? winner : '<span style="color:#9ca3af;font-size:11px;">대기</span>'}</div>
+        </div>
+        <div style="font-size:10px;color:var(--text-hint);">${ev.pts}</div>
+        <div class="event-scores">
+          <div class="event-score blue">${hasScore ? sc.blue : '-'}</div>
+          <div style="color:var(--border);font-size:12px;">|</div>
+          <div class="event-score white">${hasScore ? sc.white : '-'}</div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+/* ════════════════════════════════
+   명단 검색 탭
+════════════════════════════════ */
+let rosterFilter = 'all';
+
+function switchRoster(mode, btn) {
+  rosterFilter = mode;
+  document.querySelectorAll('.sub-tab').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  renderRoster();
+}
+
+function renderRoster() {
+  const grades = ['1학년','2학년','3학년'];
+  const rosterSchedule = SCHEDULE.filter(s => s.roster);
+  document.getElementById('roster-list').innerHTML = rosterSchedule.map(s => {
+    // 각 종목의 총 선수 수 계산
+    let total = 0;
+    grades.forEach(g => {
+      ['청팀(1반팀)','백팀(2반팀)'].forEach(t => {
+        if (s.isRelay2) { const spec = classGenderSpecs[g]?.[t]; if (spec) total += spec.total; }
+        else if (s.slots) { total += s.slots.length; }
+      });
+    });
+
+    const scoreEv = s.eventName ? SCORE_EVENTS.find(e => e.name === s.eventName) : null;
+    const pts = scoreEv ? scoreEv.pts : '';
+    const statusIcon = '⬜';
+
+    // 바디: 학년별 청/백 명단
+    const makeRows = (grade, team) => {
+      if (s.isRelay2) {
+        const spec = classGenderSpecs[grade]?.[team];
+        if (!spec) return '';
+        let f = spec.female, m = spec.male, nextF = true;
+        return Array.from({length: spec.total}, (_, i) => {
+          let gender;
+          if (nextF)  { gender = f > 0 ? 'f' : 'm'; if (f > 0) f--; else m--; }
+          else        { gender = m > 0 ? 'm' : 'f'; if (m > 0) m--; else f--; }
+          nextF = !nextF;
+          const slotKey = `주자 ${i+1}번`;
+          const name = currentRoster[grade]?.[team]?.[s.eventName]?.[slotKey] || '';
+          const dotCls = gender === 'f' ? 'dot-f' : 'dot-m';
+          return `<li><span class="runner-num">${i+1}</span><div class="player-dot ${dotCls}"></div>${name || '<span style="color:var(--text-hint)">미정</span>'}<span class="roster-grade">${gender === 'f' ? '여':'남'}</span></li>`;
+        }).join('');
+      }
+      if (!s.slots || !s.eventName) return '';
+      return s.slots.map(slot => {
+        const name = currentRoster[grade]?.[team]?.[s.eventName]?.[slot] || '';
+        return `<li><div class="roster-grade-dot"></div>${name || '<span style="color:var(--text-hint)">미정</span>'}<span class="roster-grade">${slot}</span></li>`;
+      }).join('');
+    };
+
+    const bodyGrades = grades.map(grade => {
+      let colsHtml = '';
+      if (rosterFilter !== 'white')
+        colsHtml += `<div class="roster-col"><div class="roster-col-title blue">🔵 청팀</div><ul class="roster-name-list">${makeRows(grade,'청팀(1반팀)')}</ul></div>`;
+      if (rosterFilter !== 'blue')
+        colsHtml += `<div class="roster-col"><div class="roster-col-title white">⚪ 백팀</div><ul class="roster-name-list">${makeRows(grade,'백팀(2반팀)')}</ul></div>`;
+      const colStyle = rosterFilter === 'all' ? '' : 'grid-template-columns:1fr;';
+      return `
+        <div class="relay2-grade-block">
+          <div class="relay2-grade-label">${grade}</div>
+          <div class="roster-cols" style="${colStyle}">${colsHtml}</div>
+        </div>`;
+    }).join('');
+
+    return `
+      <div class="roster-event" id="re-${s.id}">
+        <div class="roster-event-header" onclick="toggleRoster('${s.id}')">
+          <div>
+            <div class="roster-event-name">${statusIcon} ${s.title}</div>
+            <div class="roster-event-meta">${pts ? `배점 ${pts}` : ''}</div>
+          </div>
+          <span class="roster-chevron">▾</span>
+        </div>
+        <div class="roster-body">${bodyGrades}</div>
+      </div>`;
+  }).join('');
+}
+
+function toggleRoster(id) { document.getElementById('re-'+id).classList.toggle('open'); }
+
+/* ════════════════════════════════
+   이름 검색
+════════════════════════════════ */
+function onSearchInput() {
+  const q = document.getElementById('search-input').value.trim();
+  document.getElementById('search-clear').style.display = q ? 'block' : 'none';
+  document.getElementById('search-result-area').style.display = q ? 'block' : 'none';
+  document.getElementById('roster-area').style.display = q ? 'none' : 'block';
+  if (q) doSearch(q);
+}
+
+function clearSearch() {
+  document.getElementById('search-input').value = '';
+  onSearchInput();
+}
+
+function doSearch(q) {
+  // currentRoster에서 이름 검색
+  const hits = [];
+  const grades = ['1학년','2학년','3학년'];
+  grades.forEach(grade => {
+    ['청팀(1반팀)','백팀(2반팀)'].forEach(team => {
+      const events = currentRoster[grade]?.[team] || {};
+      Object.entries(events).forEach(([eventName, slots]) => {
+        Object.entries(slots).forEach(([slot, name]) => {
+          if (name && name.includes(q)) {
+            hits.push({ name, grade, team, eventName, slot });
+          }
+        });
+      });
+    });
+  });
+
+  // 같은 이름으로 묶기
+  const byName = {};
+  hits.forEach(h => {
+    if (!byName[h.name]) byName[h.name] = { name: h.name, grade: h.grade, team: h.team, events: [] };
+    if (!byName[h.name].events.includes(h.eventName)) byName[h.name].events.push(h.eventName);
+  });
+  const results = Object.values(byName);
+
+  document.getElementById('result-count').textContent = `"${q}" 검색 결과 ${results.length}명`;
+  const el = document.getElementById('search-results');
+  if (!results.length) {
+    el.innerHTML = `<div class="empty-state"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><p>검색 결과가 없습니다</p></div>`;
+    return;
+  }
+  el.innerHTML = results.map(s => {
+    const isBlue = s.team === '청팀(1반팀)';
+    const teamTag = isBlue ? `<span class="team-tag blue">🔵 청팀</span>` : `<span class="team-tag white">⚪ 백팀</span>`;
+    const evTags = s.events.map(ev => `<span class="ev-tag">${ev}</span>`).join('');
+    return `
+      <div class="student-card">
+        <div class="student-avatar ${isBlue ? 'avatar-blue' : 'avatar-gray'}">${s.name[0]}</div>
+        <div>
+          <div class="student-name-row">${s.name} ${teamTag}</div>
+          <div class="student-meta">${s.grade} · ${s.team}</div>
+          <div class="student-events">${evTags}</div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+/* ════════════════════════════════
+   Toast
+════════════════════════════════ */
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._t);
+  t._t = setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+/* ════════════════════════════════
+   시작
+════════════════════════════════ */
+loadData();
+</script>
+</body>
+</html>
