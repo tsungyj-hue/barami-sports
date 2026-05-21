@@ -328,6 +328,50 @@ const classGenderSpecs = {
   "3학년": { "청팀(1반팀)":{ male:15, female:15, total:30 }, "백팀(2반팀)":{ male:15, female:15, total:30 } }
 };
 
+// 다산 한마음 계주 고정 배치 (이미지 순서, 학년 구분 없이)
+const RELAY2_BLUE = [
+  {n:1,g:'여',gr:'1'},{n:2,g:'남',gr:'1'},{n:3,g:'여',gr:'1'},{n:4,g:'남',gr:'1'},
+  {n:5,g:'여',gr:'1'},{n:6,g:'남',gr:'1'},{n:7,g:'여',gr:'1'},{n:8,g:'남',gr:'1'},
+  {n:9,g:'여',gr:'1'},{n:10,g:'남',gr:'1'},{n:11,g:'여',gr:'1'},{n:12,g:'남',gr:'1'},
+  {n:13,g:'여',gr:'1'},{n:14,g:'남',gr:'1'},{n:15,g:'여',gr:'1'},{n:16,g:'남',gr:'1'},
+  {n:17,g:'여',gr:'1'},{n:18,g:'남',gr:'1'},{n:19,g:'여',gr:'2'},{n:20,g:'남',gr:'1'},
+  {n:21,g:'여',gr:'2'},{n:22,g:'남',gr:'1'},
+  {n:23,g:'여',gr:'2'},{n:24,g:'남',gr:'2'},{n:25,g:'여',gr:'2'},{n:26,g:'남',gr:'2'},
+  {n:27,g:'여',gr:'2'},{n:28,g:'남',gr:'2'},{n:29,g:'여',gr:'2'},{n:30,g:'남',gr:'2'},
+  {n:31,g:'여',gr:'2'},{n:32,g:'남',gr:'2'},{n:33,g:'여',gr:'2'},{n:34,g:'남',gr:'2'},
+  {n:35,g:'여',gr:'2'},{n:36,g:'남',gr:'2'},{n:37,g:'여',gr:'2'},{n:38,g:'남',gr:'2'},
+  {n:39,g:'여',gr:'2'},{n:40,g:'남',gr:'2'},
+  {n:41,g:'여',gr:'3'},{n:42,g:'남',gr:'3'},{n:43,g:'여',gr:'3'},{n:44,g:'남',gr:'3'},
+  {n:45,g:'여',gr:'3'},{n:46,g:'남',gr:'3'},{n:47,g:'여',gr:'3'},{n:48,g:'남',gr:'3'},
+  {n:49,g:'여',gr:'3'},{n:50,g:'남',gr:'3'},{n:51,g:'여',gr:'3'},{n:52,g:'남',gr:'3'},
+  {n:53,g:'여',gr:'3'},{n:54,g:'남',gr:'3'},{n:55,g:'여',gr:'3'},{n:56,g:'남',gr:'3'},
+  {n:57,g:'여',gr:'3'},{n:58,g:'남',gr:'3'},{n:59,g:'여',gr:'3'},{n:60,g:'남',gr:'3'},
+  {n:61,g:'여',gr:'3'},{n:62,g:'남',gr:'3'},{n:63,g:'여',gr:'3'},{n:64,g:'남',gr:'3'},
+  {n:65,g:'여',gr:'3'},{n:66,g:'남',gr:'3'},{n:67,g:'여',gr:'3'},{n:68,g:'남',gr:'3'},
+  {n:69,g:'여',gr:'3'},{n:70,g:'남',gr:'3'},
+];
+const RELAY2_WHITE = [
+  {n:1,g:'여',gr:'1'},{n:2,g:'남',gr:'1'},{n:3,g:'여',gr:'1'},{n:4,g:'남',gr:'1'},
+  {n:5,g:'여',gr:'1'},{n:6,g:'남',gr:'1'},{n:7,g:'여',gr:'1'},{n:8,g:'남',gr:'1'},
+  {n:9,g:'여',gr:'1'},{n:10,g:'남',gr:'1'},{n:11,g:'여',gr:'1'},{n:12,g:'남',gr:'1'},
+  {n:13,g:'여',gr:'1'},{n:14,g:'남',gr:'1'},{n:15,g:'여',gr:'1'},{n:16,g:'남',gr:'1'},
+  {n:17,g:'여',gr:'1'},{n:18,g:'남',gr:'1'},{n:19,g:'여',gr:'2'},{n:20,g:'남',gr:'1'},
+  {n:21,g:'여',gr:'2'},{n:22,g:'남',gr:'1'},
+  {n:23,g:'여',gr:'2'},{n:24,g:'남',gr:'1'},{n:25,g:'여',gr:'2'},{n:26,g:'남',gr:'1'},
+  {n:27,g:'여',gr:'2'},{n:28,g:'남',gr:'2'},{n:29,g:'여',gr:'2'},{n:30,g:'남',gr:'2'},
+  {n:31,g:'여',gr:'2'},{n:32,g:'남',gr:'2'},{n:33,g:'여',gr:'2'},{n:34,g:'남',gr:'2'},
+  {n:35,g:'여',gr:'2'},{n:36,g:'남',gr:'2'},{n:37,g:'여',gr:'2'},{n:38,g:'남',gr:'2'},
+  {n:39,g:'여',gr:'2'},{n:40,g:'남',gr:'2'},
+  {n:41,g:'여',gr:'3'},{n:42,g:'남',gr:'2'},{n:43,g:'여',gr:'3'},{n:44,g:'남',gr:'2'},
+  {n:45,g:'여',gr:'3'},{n:46,g:'남',gr:'2'},{n:47,g:'여',gr:'3'},{n:48,g:'남',gr:'2'},
+  {n:49,g:'여',gr:'3'},{n:50,g:'남',gr:'2'},{n:51,g:'여',gr:'3'},{n:52,g:'남',gr:'3'},
+  {n:53,g:'여',gr:'3'},{n:54,g:'남',gr:'3'},{n:55,g:'여',gr:'3'},{n:56,g:'남',gr:'3'},
+  {n:57,g:'여',gr:'3'},{n:58,g:'남',gr:'3'},{n:59,g:'여',gr:'3'},{n:60,g:'남',gr:'3'},
+  {n:61,g:'여',gr:'3'},{n:62,g:'남',gr:'3'},{n:63,g:'여',gr:'3'},{n:64,g:'남',gr:'3'},
+  {n:65,g:'여',gr:'3'},{n:66,g:'남',gr:'3'},{n:67,g:'여',gr:'3'},{n:68,g:'남',gr:'3'},
+  {n:69,g:'여',gr:'3'},{n:70,g:'남',gr:'3'},
+];
+
 const SCORE_EVENTS = [
   { name:"OX 퀴즈", pts:"100/80" }, { name:"파도를 넘어서", pts:"100/80" },
   { name:"고무신 양궁", pts:"100/80" }, { name:"단체 줄넘기", pts:"100/70" },
@@ -524,28 +568,23 @@ function buildTlBody(s) {
   if (!s.roster) return '';
   const grades = ['1학년','2학년','3학년'];
   if (s.isRelay2) {
-    // DB에 팀별 통합 번호(주자 1번~끝)로 저장되어 있으므로 전체 번호로 읽기
     const makeTeamCol = (team, isBlue) => {
-      let runnerNum = 0;
-      const rows = grades.map(grade => {
-        const spec = classGenderSpecs[grade]?.[team];
-        if (!spec) return '';
-        let f = spec.female, m = spec.male, nextF = true;
-        const items = Array.from({length: spec.total}, (_, i) => {
-          runnerNum++;
-          let gender;
-          if (nextF)  { gender = f > 0 ? 'f' : 'm'; if (f > 0) f--; else m--; }
-          else        { gender = m > 0 ? 'm' : 'f'; if (m > 0) m--; else f--; }
-          nextF = !nextF;
-          // 학년 구분 없이 팀 전체 통합 번호로 읽기
-          const name = currentRoster[grade]?.[team]?.[s.eventName]?.[`주자 ${runnerNum}번`] || '';
-          return `<li><span class="runner-num">${runnerNum}</span><div class="player-dot ${gender==='f'?'dot-f':'dot-m'}"></div>${name||'<span style="color:var(--text-hint)">미정</span>'}<span class="player-grade">${gender==='f'?'여':'남'} ${grade}</span></li>`;
-        }).join('');
-        return `<div class="grade-block"><div class="grade-block-label">${grade}</div><ul class="tl-player-list">${items}</ul></div>`;
+      const layout = isBlue ? RELAY2_BLUE : RELAY2_WHITE;
+      // 학년별로 DB에서 이름 가져오기 (grade별로 저장되어 있으므로 합쳐서 map 구성)
+      const nameMap = {};
+      ['1학년','2학년','3학년'].forEach(grade => {
+        const slots = currentRoster[grade]?.[team]?.[s.eventName] || {};
+        Object.entries(slots).forEach(([slot, name]) => { nameMap[slot] = name; });
+      });
+      const items = layout.map(p => {
+        const name = nameMap[`주자 ${p.n}번`] || '';
+        const dotCls = p.g === '여' ? 'dot-f' : 'dot-m';
+        const label = `${p.g}${p.gr}`;
+        return `<li><span class="runner-num">${p.n}</span><div class="player-dot ${dotCls}"></div>${name||'<span style="color:var(--text-hint)">미정</span>'}<span class="player-grade">${label}</span></li>`;
       }).join('');
       return `<div style="flex:1;min-width:0;border-right:${isBlue?'1px solid var(--border)':'none'};padding:.75rem 1rem;">
         <div class="tl-col-title ${isBlue?'blue':'white'}">${isBlue?'🔵 청팀':'⚪ 백팀'}</div>
-        ${rows}
+        <ul class="tl-player-list">${items}</ul>
       </div>`;
     };
     return `<div class="tl-body"><div style="display:flex;">${makeTeamCol('청팀(1반팀)',true)}${makeTeamCol('백팀(2반팀)',false)}</div></div>`;
@@ -602,22 +641,15 @@ function renderRoster() {
     const bodyGrades = grades.map(grade => {
       const makeRows = (team) => {
         if (s.isRelay2) {
-          const spec = classGenderSpecs[grade]?.[team];
-          if (!spec) return '';
-          // 팀 전체 통합 번호 계산
-          let startNum = 1;
-          for (const g of grades) {
-            if (g === grade) break;
-            startNum += classGenderSpecs[g]?.[team]?.total || 0;
-          }
-          let f = spec.female, m = spec.male, nextF = true;
-          return Array.from({length:spec.total},(_,i)=>{
-            const num = startNum + i;
-            let gender;
-            if (nextF) { gender=f>0?'f':'m'; if(f>0)f--; else m--; } else { gender=m>0?'m':'f'; if(m>0)m--; else f--; }
-            nextF=!nextF;
-            const name = currentRoster[grade]?.[team]?.[s.eventName]?.[`주자 ${num}번`]||'';
-            return `<li><span class="runner-num">${num}</span><div class="player-dot ${gender==='f'?'dot-f':'dot-m'}"></div>${name||'<span style="color:var(--text-hint)">미정</span>'}<span class="roster-grade">${gender==='f'?'여':'남'}</span></li>`;
+          const layout = team === '청팀(1반팀)' ? RELAY2_BLUE : RELAY2_WHITE;
+          const nameMap = {};
+          ['1학년','2학년','3학년'].forEach(g => {
+            const slots = currentRoster[g]?.[team]?.[s.eventName] || {};
+            Object.entries(slots).forEach(([slot, name]) => { nameMap[slot] = name; });
+          });
+          return layout.map(p => {
+            const name = nameMap[`주자 ${p.n}번`] || '';
+            return `<li><span class="runner-num">${p.n}</span><div class="player-dot ${p.g==='여'?'dot-f':'dot-m'}"></div>${name||'<span style="color:var(--text-hint)">미정</span>'}<span class="roster-grade">${p.g}${p.gr}</span></li>`;
           }).join('');
         }
         if (!s.slots||!s.eventName) return '';
