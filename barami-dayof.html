@@ -524,7 +524,7 @@ function buildTlBody(s) {
   if (!s.roster) return '';
   const grades = ['1학년','2학년','3학년'];
   if (s.isRelay2) {
-    // 청팀/백팀 각각 전체 주자를 1번부터 이어서 표시
+    // DB에 팀별 통합 번호(주자 1번~끝)로 저장되어 있으므로 전체 번호로 읽기
     const makeTeamCol = (team, isBlue) => {
       let runnerNum = 0;
       const rows = grades.map(grade => {
@@ -537,7 +537,8 @@ function buildTlBody(s) {
           if (nextF)  { gender = f > 0 ? 'f' : 'm'; if (f > 0) f--; else m--; }
           else        { gender = m > 0 ? 'm' : 'f'; if (m > 0) m--; else f--; }
           nextF = !nextF;
-          const name = currentRoster[grade]?.[team]?.[s.eventName]?.[`주자 ${i+1}번`] || '';
+          // 학년 구분 없이 팀 전체 통합 번호로 읽기
+          const name = currentRoster[grade]?.[team]?.[s.eventName]?.[`주자 ${runnerNum}번`] || '';
           return `<li><span class="runner-num">${runnerNum}</span><div class="player-dot ${gender==='f'?'dot-f':'dot-m'}"></div>${name||'<span style="color:var(--text-hint)">미정</span>'}<span class="player-grade">${gender==='f'?'여':'남'} ${grade}</span></li>`;
         }).join('');
         return `<div class="grade-block"><div class="grade-block-label">${grade}</div><ul class="tl-player-list">${items}</ul></div>`;
@@ -603,13 +604,20 @@ function renderRoster() {
         if (s.isRelay2) {
           const spec = classGenderSpecs[grade]?.[team];
           if (!spec) return '';
+          // 팀 전체 통합 번호 계산
+          let startNum = 1;
+          for (const g of grades) {
+            if (g === grade) break;
+            startNum += classGenderSpecs[g]?.[team]?.total || 0;
+          }
           let f = spec.female, m = spec.male, nextF = true;
           return Array.from({length:spec.total},(_,i)=>{
+            const num = startNum + i;
             let gender;
             if (nextF) { gender=f>0?'f':'m'; if(f>0)f--; else m--; } else { gender=m>0?'m':'f'; if(m>0)m--; else f--; }
             nextF=!nextF;
-            const name = currentRoster[grade]?.[team]?.[s.eventName]?.[`주자 ${i+1}번`]||'';
-            return `<li><span class="runner-num">${i+1}</span><div class="player-dot ${gender==='f'?'dot-f':'dot-m'}"></div>${name||'<span style="color:var(--text-hint)">미정</span>'}<span class="roster-grade">${gender==='f'?'여':'남'}</span></li>`;
+            const name = currentRoster[grade]?.[team]?.[s.eventName]?.[`주자 ${num}번`]||'';
+            return `<li><span class="runner-num">${num}</span><div class="player-dot ${gender==='f'?'dot-f':'dot-m'}"></div>${name||'<span style="color:var(--text-hint)">미정</span>'}<span class="roster-grade">${gender==='f'?'여':'남'}</span></li>`;
           }).join('');
         }
         if (!s.slots||!s.eventName) return '';
