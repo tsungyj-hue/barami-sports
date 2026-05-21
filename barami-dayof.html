@@ -194,77 +194,68 @@
     <!-- 경기장 배치도 -->
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:.75rem 1rem;margin-bottom:1rem;">
       <div style="font-size:12px;font-weight:700;color:var(--text-sub);letter-spacing:.06em;margin-bottom:.6rem;">📍 경기장 배치도</div>
-      <svg width="100%" viewBox="0 0 640 380" style="display:block;">
-        <defs>
-          <style>
-            .mp-t  { font-family:'Noto Sans KR',sans-serif; font-size:13px; fill:#111827; }
-            .mp-ts { font-family:'Noto Sans KR',sans-serif; font-size:11px; fill:#6b7280; }
-            .mp-th { font-family:'Noto Sans KR',sans-serif; font-size:13px; font-weight:700; fill:#111827; }
-            .mp-blue-fill  { fill:#e8f0fd; stroke:#1a56db; }
-            .mp-blue-text  { fill:#0f3a9e; }
-            .mp-gray-fill  { fill:#f4f5f8; stroke:#9ca3af; }
-            .mp-gray-text  { fill:#374151; }
-            .mp-green-fill { fill:#E8F5E4; stroke:#B8D9A8; }
-          </style>
-        </defs>
+      <svg width="100%" viewBox="0 0 640 375" style="display:block;">
 
         <!-- 외곽 테두리 -->
         <rect x="20" y="20" width="600" height="345" rx="8" fill="none" stroke="#9ca3af" stroke-width="1.5" opacity="0.5"/>
 
         <!-- 본관 -->
-        <rect x="180" y="4" width="260" height="32" rx="5" class="mp-gray-fill" stroke-width="0.5"/>
-        <text x="310" y="24" text-anchor="middle" dominant-baseline="central" class="mp-th">본관</text>
+        <rect x="180" y="4" width="260" height="32" rx="5" fill="#f4f5f8" stroke="#9ca3af" stroke-width="0.5"/>
+        <text x="310" y="20" text-anchor="middle" dominant-baseline="central" font-family="'Noto Sans KR',sans-serif" font-size="13" font-weight="700" fill="#374151">본관</text>
 
-        <!-- 관람석 (오른쪽) -->
-        <rect x="255" y="42" width="72" height="40" rx="4" class="mp-gray-fill" stroke-width="0.5"/>
-        <text x="291" y="57" text-anchor="middle" dominant-baseline="central" class="mp-ts">학부모</text>
-        <text x="291" y="73" text-anchor="middle" dominant-baseline="central" class="mp-ts">참관석</text>
+        <!-- 학부모 참관석 -->
+        <rect x="255" y="42" width="72" height="40" rx="4" fill="#f4f5f8" stroke="#9ca3af" stroke-width="0.5"/>
+        <text x="291" y="57" text-anchor="middle" dominant-baseline="central" font-family="'Noto Sans KR',sans-serif" font-size="11" fill="#6b7280">학부모</text>
+        <text x="291" y="73" text-anchor="middle" dominant-baseline="central" font-family="'Noto Sans KR',sans-serif" font-size="11" fill="#6b7280">참관석</text>
 
-        <rect x="333" y="42" width="48" height="40" rx="4" class="mp-gray-fill" stroke-width="0.5"/>
-        <text x="357" y="62" text-anchor="middle" dominant-baseline="central" class="mp-ts">본부</text>
+        <!-- 본부 -->
+        <rect x="333" y="42" width="48" height="40" rx="4" fill="#f4f5f8" stroke="#9ca3af" stroke-width="0.5"/>
+        <text x="357" y="62" text-anchor="middle" dominant-baseline="central" font-family="'Noto Sans KR',sans-serif" font-size="11" fill="#6b7280">본부</text>
 
-        <rect x="387" y="42" width="72" height="40" rx="4" class="mp-gray-fill" stroke-width="0.5"/>
-        <text x="423" y="57" text-anchor="middle" dominant-baseline="central" class="mp-ts">교직원</text>
-        <text x="423" y="73" text-anchor="middle" dominant-baseline="central" class="mp-ts">참관석</text>
+        <!-- 교직원 참관석 -->
+        <rect x="387" y="42" width="72" height="40" rx="4" fill="#f4f5f8" stroke="#9ca3af" stroke-width="0.5"/>
+        <text x="423" y="57" text-anchor="middle" dominant-baseline="central" font-family="'Noto Sans KR',sans-serif" font-size="11" fill="#6b7280">교직원</text>
+        <text x="423" y="73" text-anchor="middle" dominant-baseline="central" font-family="'Noto Sans KR',sans-serif" font-size="11" fill="#6b7280">참관석</text>
 
-        <rect x="465" y="42" width="58" height="40" rx="4" class="mp-gray-fill" stroke-width="0.5"/>
-        <text x="494" y="57" text-anchor="middle" dominant-baseline="central" class="mp-ts">음향</text>
-        <text x="494" y="73" text-anchor="middle" dominant-baseline="central" class="mp-ts">시설</text>
+        <!-- 음향시설 -->
+        <rect x="465" y="42" width="58" height="40" rx="4" fill="#f4f5f8" stroke="#9ca3af" stroke-width="0.5"/>
+        <text x="494" y="57" text-anchor="middle" dominant-baseline="central" font-family="'Noto Sans KR',sans-serif" font-size="11" fill="#6b7280">음향</text>
+        <text x="494" y="73" text-anchor="middle" dominant-baseline="central" font-family="'Noto Sans KR',sans-serif" font-size="11" fill="#6b7280">시설</text>
 
         <!-- 트랙 -->
-        <ellipse cx="280" cy="210" rx="148" ry="110" class="mp-green-fill" stroke-width="1"/>
-        <text x="280" y="210" text-anchor="middle" dominant-baseline="central" class="mp-ts" fill="#3B6D11" opacity="0.8">운동장</text>
+        <ellipse cx="280" cy="208" rx="148" ry="110" fill="#E8F5E4" stroke="#B8D9A8" stroke-width="1"/>
+        <text x="280" y="208" text-anchor="middle" dominant-baseline="central" font-family="'Noto Sans KR',sans-serif" font-size="11" fill="#3B6D11" opacity="0.8">운동장</text>
 
         <!-- 신관 -->
-        <rect x="560" y="135" width="48" height="110" rx="4" class="mp-gray-fill" stroke-width="0.5"/>
-        <text x="584" y="193" text-anchor="middle" dominant-baseline="central" class="mp-th">신관</text>
+        <rect x="560" y="133" width="48" height="110" rx="4" fill="#f4f5f8" stroke="#9ca3af" stroke-width="0.5"/>
+        <text x="584" y="191" text-anchor="middle" dominant-baseline="central" font-family="'Noto Sans KR',sans-serif" font-size="13" font-weight="700" fill="#374151">신관</text>
 
         <!-- 조례대 -->
-        <rect x="522" y="173" width="36" height="34" rx="4" class="mp-gray-fill" stroke-width="0.5"/>
-        <text x="540" y="190" text-anchor="middle" dominant-baseline="central" class="mp-ts">조례대</text>
+        <rect x="522" y="171" width="36" height="34" rx="4" fill="#f4f5f8" stroke="#9ca3af" stroke-width="0.5"/>
+        <text x="540" y="188" text-anchor="middle" dominant-baseline="central" font-family="'Noto Sans KR',sans-serif" font-size="11" fill="#6b7280">조례대</text>
 
         <!-- 식수대 -->
-        <rect x="20" y="175" width="42" height="34" rx="4" class="mp-blue-fill" stroke-width="0.5"/>
-        <text x="41" y="192" text-anchor="middle" dominant-baseline="central" class="mp-ts mp-blue-text">식수대</text>
+        <rect x="20" y="173" width="42" height="34" rx="4" fill="#e8f0fd" stroke="#1a56db" stroke-width="0.5"/>
+        <text x="41" y="190" text-anchor="middle" dominant-baseline="central" font-family="'Noto Sans KR',sans-serif" font-size="11" fill="#0f3a9e">식수대</text>
 
         <!-- 체육기자재실 -->
-        <rect x="20" y="330" width="68" height="34" rx="4" class="mp-gray-fill" stroke-width="0.5"/>
-        <text x="54" y="344" text-anchor="middle" dominant-baseline="central" class="mp-ts">체육</text>
-        <text x="54" y="357" text-anchor="middle" dominant-baseline="central" class="mp-ts">기자재실</text>
+        <rect x="20" y="330" width="68" height="34" rx="4" fill="#f4f5f8" stroke="#9ca3af" stroke-width="0.5"/>
+        <text x="54" y="344" text-anchor="middle" dominant-baseline="central" font-family="'Noto Sans KR',sans-serif" font-size="11" fill="#6b7280">체육</text>
+        <text x="54" y="358" text-anchor="middle" dominant-baseline="central" font-family="'Noto Sans KR',sans-serif" font-size="11" fill="#6b7280">기자재실</text>
 
         <!-- 청팀 -->
-        <rect x="140" y="322" width="170" height="40" rx="5" class="mp-blue-fill" stroke-width="0.5"/>
-        <text x="178" y="335" text-anchor="middle" dominant-baseline="central" class="mp-ts mp-blue-text">1-1</text>
-        <text x="225" y="335" text-anchor="middle" dominant-baseline="central" class="mp-ts mp-blue-text">2-1</text>
-        <text x="272" y="335" text-anchor="middle" dominant-baseline="central" class="mp-ts mp-blue-text">3-1</text>
-        <text x="225" y="352" text-anchor="middle" dominant-baseline="central" style="font-family:'Noto Sans KR',sans-serif;font-size:12px;font-weight:700;fill:#0f3a9e;">청팀</text>
+        <rect x="140" y="322" width="170" height="40" rx="5" fill="#e8f0fd" stroke="#1a56db" stroke-width="0.5"/>
+        <text x="178" y="335" text-anchor="middle" dominant-baseline="central" font-family="'Noto Sans KR',sans-serif" font-size="11" fill="#0f3a9e">1-1</text>
+        <text x="225" y="335" text-anchor="middle" dominant-baseline="central" font-family="'Noto Sans KR',sans-serif" font-size="11" fill="#0f3a9e">2-1</text>
+        <text x="272" y="335" text-anchor="middle" dominant-baseline="central" font-family="'Noto Sans KR',sans-serif" font-size="11" fill="#0f3a9e">3-1</text>
+        <text x="225" y="352" text-anchor="middle" dominant-baseline="central" font-family="'Noto Sans KR',sans-serif" font-size="12" font-weight="700" fill="#0f3a9e">청팀</text>
 
         <!-- 백팀 -->
-        <rect x="318" y="322" width="170" height="40" rx="5" class="mp-gray-fill" stroke-width="0.5"/>
-        <text x="356" y="335" text-anchor="middle" dominant-baseline="central" class="mp-ts mp-gray-text">3-2</text>
-        <text x="403" y="335" text-anchor="middle" dominant-baseline="central" class="mp-ts mp-gray-text">2-2</text>
-        <text x="450" y="335" text-anchor="middle" dominant-baseline="central" class="mp-ts mp-gray-text">1-2</text>
-        <text x="403" y="352" text-anchor="middle" dominant-baseline="central" style="font-family:'Noto Sans KR',sans-serif;font-size:12px;font-weight:700;fill:#374151;">백팀</text>
+        <rect x="318" y="322" width="170" height="40" rx="5" fill="#f4f5f8" stroke="#9ca3af" stroke-width="0.5"/>
+        <text x="356" y="335" text-anchor="middle" dominant-baseline="central" font-family="'Noto Sans KR',sans-serif" font-size="11" fill="#374151">3-2</text>
+        <text x="403" y="335" text-anchor="middle" dominant-baseline="central" font-family="'Noto Sans KR',sans-serif" font-size="11" fill="#374151">2-2</text>
+        <text x="450" y="335" text-anchor="middle" dominant-baseline="central" font-family="'Noto Sans KR',sans-serif" font-size="11" fill="#374151">1-2</text>
+        <text x="403" y="352" text-anchor="middle" dominant-baseline="central" font-family="'Noto Sans KR',sans-serif" font-size="12" font-weight="700" fill="#374151">백팀</text>
 
       </svg>
     </div>
@@ -533,24 +524,30 @@ function buildTlBody(s) {
   if (!s.roster) return '';
   const grades = ['1학년','2학년','3학년'];
   if (s.isRelay2) {
-    const blocks = grades.map(grade => {
-      const makeCol = (team, isBlue) => {
+    // 청팀/백팀 각각 전체 주자를 1번부터 이어서 표시
+    const makeTeamCol = (team, isBlue) => {
+      let runnerNum = 0;
+      const rows = grades.map(grade => {
         const spec = classGenderSpecs[grade]?.[team];
         if (!spec) return '';
         let f = spec.female, m = spec.male, nextF = true;
         const items = Array.from({length: spec.total}, (_, i) => {
+          runnerNum++;
           let gender;
           if (nextF)  { gender = f > 0 ? 'f' : 'm'; if (f > 0) f--; else m--; }
           else        { gender = m > 0 ? 'm' : 'f'; if (m > 0) m--; else f--; }
           nextF = !nextF;
           const name = currentRoster[grade]?.[team]?.[s.eventName]?.[`주자 ${i+1}번`] || '';
-          return `<li><span class="runner-num">${i+1}</span><div class="player-dot ${gender==='f'?'dot-f':'dot-m'}"></div>${name||'<span style="color:var(--text-hint)">미정</span>'}<span class="player-grade">${gender==='f'?'여':'남'} ${grade.replace('학년','')}</span></li>`;
+          return `<li><span class="runner-num">${runnerNum}</span><div class="player-dot ${gender==='f'?'dot-f':'dot-m'}"></div>${name||'<span style="color:var(--text-hint)">미정</span>'}<span class="player-grade">${gender==='f'?'여':'남'} ${grade}</span></li>`;
         }).join('');
-        return `<div class="tl-roster-col"><div class="tl-col-title ${isBlue?'blue':'white'}">${isBlue?'🔵 청팀':'⚪ 백팀'}</div><ul class="tl-player-list">${items}</ul></div>`;
-      };
-      return `<div class="grade-block"><div class="grade-block-label">${grade}</div><div class="tl-roster-cols">${makeCol('청팀(1반팀)',true)}${makeCol('백팀(2반팀)',false)}</div></div>`;
-    }).join('');
-    return `<div class="tl-body">${blocks}</div>`;
+        return `<div class="grade-block"><div class="grade-block-label">${grade}</div><ul class="tl-player-list">${items}</ul></div>`;
+      }).join('');
+      return `<div style="flex:1;min-width:0;border-right:${isBlue?'1px solid var(--border)':'none'};padding:.75rem 1rem;">
+        <div class="tl-col-title ${isBlue?'blue':'white'}">${isBlue?'🔵 청팀':'⚪ 백팀'}</div>
+        ${rows}
+      </div>`;
+    };
+    return `<div class="tl-body"><div style="display:flex;">${makeTeamCol('청팀(1반팀)',true)}${makeTeamCol('백팀(2반팀)',false)}</div></div>`;
   }
   if (!s.eventName || !s.slots) return '';
   const blocks = grades.map(grade => {
