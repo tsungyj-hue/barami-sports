@@ -5,274 +5,167 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>2026학년도 바래미 체육 한마당 안내 & 명단 관리</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <!-- Supabase JS SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     :root {
-      --primary: #1e40af;
-      --primary-light: #eff6ff;
-      --secondary: #3b82f6;
-      --accent: #fbbf24;
-      --text-main: #1f2937;
-      --text-muted: #4b5563;
-      --bg-gray: #f3f4f6;
-      --radius: 12px;
-      --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      --primary: #1e40af; --primary-light: #eff6ff; --secondary: #3b82f6;
+      --accent: #fbbf24; --text-main: #1f2937; --text-muted: #4b5563;
+      --bg-gray: #f3f4f6; --radius: 12px;
+      --shadow: 0 4px 6px -1px rgba(0,0,0,.1), 0 2px 4px -1px rgba(0,0,0,.06);
     }
-
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Pretendard', -apple-system, sans-serif; }
     body { background-color: #f8fafc; color: var(--text-main); line-height: 1.6; padding: 16px; }
     .container { max-width: 850px; margin: 0 auto; }
-
-    .hero {
-      background: linear-gradient(135deg, #1e40af 0%, #2563eb 60%, #3b82f6 100%);
-      color: white; border-radius: var(--radius); padding: 32px 24px;
-      text-align: center; margin-bottom: 20px; box-shadow: var(--shadow);
-    }
-    .badge { background: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 20px; font-size: 14px; font-weight: bold; display: inline-block; margin-bottom: 12px; }
-    .hero h1 { font-size: 28px; margin-bottom: 8px; letter-spacing: -0.5px; }
-    .subtitle { opacity: 0.9; font-size: 16px; margin-bottom: 20px; }
-    .hero-info { display: flex; justify-content: center; gap: 16px; flex-wrap: wrap; font-size: 14px; background: rgba(0,0,0,0.15); padding: 10px; border-radius: 8px; }
-
-    .sync-bar {
-      background: #f0fdf4; border: 1px solid #bbf7d0; padding: 8px 16px;
-      border-radius: 8px; margin-bottom: 12px; display: flex;
-      justify-content: space-between; align-items: center; font-size: 13px; color: #15803d;
-    }
+    .hero { background: linear-gradient(135deg,#1e40af 0%,#2563eb 60%,#3b82f6 100%); color: white; border-radius: var(--radius); padding: 32px 24px; text-align: center; margin-bottom: 20px; box-shadow: var(--shadow); }
+    .badge { background: rgba(255,255,255,.2); padding: 4px 12px; border-radius: 20px; font-size: 14px; font-weight: bold; display: inline-block; margin-bottom: 12px; }
+    .hero h1 { font-size: 28px; margin-bottom: 8px; letter-spacing: -.5px; }
+    .subtitle { opacity: .9; font-size: 16px; margin-bottom: 20px; }
+    .hero-info { display: flex; justify-content: center; gap: 16px; flex-wrap: wrap; font-size: 14px; background: rgba(0,0,0,.15); padding: 10px; border-radius: 8px; }
+    .sync-bar { background: #f0fdf4; border: 1px solid #bbf7d0; padding: 8px 16px; border-radius: 8px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: #15803d; }
     .sync-bar.error { background: #fff1f2; border-color: #fecdd3; color: #be123c; }
     .sync-bar.syncing { background: #fffbeb; border-color: #fde68a; color: #b45309; }
     .sync-dot { width: 8px; height: 8px; border-radius: 50%; background: #16a34a; display: inline-block; margin-right: 6px; }
-    .sync-dot.error { background: #dc2626; }
-    .sync-dot.syncing { background: #f59e0b; animation: pulse 1s infinite; }
-    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
-
+    .sync-dot.error { background: #dc2626; } .sync-dot.syncing { background: #f59e0b; animation: pulse 1s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
     .admin-bar { background: #f1f5f9; border: 1px solid #cbd5e1; padding: 10px 16px; border-radius: 8px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; font-size: 14px; }
     .admin-badge { font-weight: bold; color: #0f172a; display: flex; align-items: center; gap: 6px; }
-    .admin-btn { background: #334155; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; transition: background 0.2s; }
-    .admin-btn:hover { background: #1e293b; }
-    .admin-btn.logged-in { background: #dc2626; }
+    .admin-btn { background: #334155; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; transition: background .2s; }
+    .admin-btn:hover { background: #1e293b; } .admin-btn.logged-in { background: #dc2626; }
 
-    /* ── 탭: 7개로 확장 ── */
-    .tabs { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-bottom: 20px; }
-    .tab-btn { background: white; border: 1px solid #e2e8f0; padding: 12px 4px; font-size: 11px; font-weight: 600; color: var(--text-muted); border-radius: 8px; cursor: pointer; transition: all 0.2s; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+    /* 탭 8개 */
+    .tabs { display: grid; grid-template-columns: repeat(8,1fr); gap: 4px; margin-bottom: 20px; }
+    .tab-btn { background: white; border: 1px solid #e2e8f0; padding: 12px 4px; font-size: 10px; font-weight: 600; color: var(--text-muted); border-radius: 8px; cursor: pointer; transition: all .2s; display: flex; flex-direction: column; align-items: center; gap: 4px; }
     .tab-btn:hover { background: var(--primary-light); color: var(--primary); }
     .tab-btn.active { background: var(--primary); color: white; border-color: var(--primary); box-shadow: var(--shadow); }
-
     .tab-content { display: none; }
-    .tab-content.active { display: block; animation: fadeIn 0.3s ease-in-out; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
-
+    .tab-content.active { display: block; animation: fadeIn .3s ease-in-out; }
+    @keyframes fadeIn { from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:translateY(0)} }
     .card { background: white; border-radius: var(--radius); padding: 20px; margin-bottom: 16px; box-shadow: var(--shadow); border: 1px solid #f1f5f9; }
     .card h2 { font-size: 18px; color: var(--primary); margin-bottom: 14px; display: flex; align-items: center; gap: 8px; border-bottom: 2px solid var(--primary-light); padding-bottom: 8px; }
-
     .table-wrapper { overflow-x: auto; }
     table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 14px; text-align: left; }
     th { background: var(--primary-light); color: var(--primary); font-weight: 700; padding: 10px; border-bottom: 2px solid #dbeafe; }
     td { padding: 12px 10px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
     tr:hover { background-color: #f8fafc; }
-
-    .score-input, .student-input, .parent-input { padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; outline: none; font-weight: bold; }
+    .score-input,.student-input,.parent-input { padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; outline: none; font-weight: bold; }
     .score-input { width: 70px; text-align: center; }
-    .score-input:disabled, .student-input:disabled, .parent-input:disabled { background-color: #e2e8f0 !important; color: #64748b !important; border-color: #cbd5e1 !important; cursor: not-allowed; }
+    .score-input:disabled,.student-input:disabled,.parent-input:disabled { background-color: #e2e8f0!important; color: #64748b!important; border-color: #cbd5e1!important; cursor: not-allowed; }
     .score-blue { color: #2563eb; border-color: #bfdbfe; background-color: #eff6ff; }
     .score-white { color: #475569; border-color: #e2e8f0; background-color: #f8fafc; }
-
     .total-display-box { display: flex; justify-content: space-around; background: #f1f5f9; padding: 12px; border-radius: 8px; font-weight: bold; margin-bottom: 15px; border: 1px solid #e2e8f0; }
-
     .event-item { border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 10px; overflow: hidden; }
-    .event-header { padding: 14px; background: white; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-weight: 700; transition: background 0.2s; }
+    .event-header { padding: 14px; background: white; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-weight: 700; transition: background .2s; }
     .event-header:hover { background: var(--primary-light); }
     .event-header.active { background: var(--primary); color: white; }
     .event-meta { font-size: 11px; padding: 2px 8px; background: #e0e7ff; color: var(--primary); border-radius: 10px; }
-    .event-header.active .event-meta { background: rgba(255,255,255,0.2); color: white; }
+    .event-header.active .event-meta { background: rgba(255,255,255,.2); color: white; }
     .event-body { padding: 0; display: none; background: #f8fafc; border-top: 1px solid #e2e8f0; }
     .event-body.show { display: block; padding: 16px; }
-    .event-item-block { margin-bottom: 8px; }
     .info-label { font-weight: bold; color: var(--secondary); font-size: 13px; display: inline-block; width: 90px; }
     .info-text { font-size: 14px; color: var(--text-main); }
-
     .filter-box { display: flex; gap: 10px; margin-bottom: 16px; background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px dashed #cbd5e1; }
     .filter-box select { flex: 1; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; outline: none; background-color: white; font-weight: bold; }
-
     .roster-stack { display: flex; flex-direction: column; gap: 16px; margin-top: 10px; }
-    .roster-card { background: white; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    .roster-card { background: white; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,.05); }
     .roster-card h4 { font-size: 15px; color: var(--primary); margin-bottom: 12px; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px; display: flex; justify-content: space-between; align-items: center; }
     .roster-card h4 .badge-req { font-size: 11px; background: #dbeafe; color: #1e40af; padding: 2px 8px; border-radius: 12px; font-weight: bold; }
     .roster-card h4 .badge-limit { font-size: 11px; background: #ffe4e6; color: #e11d48; padding: 2px 8px; border-radius: 12px; font-weight: bold; border: 1px solid #fecdd3; }
-
     .input-grid-1col { display: flex; flex-direction: column; gap: 8px; }
-    .input-grid-2col { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .input-grid-2col { display: grid; grid-template-columns: repeat(2,1fr); gap: 8px; }
     .input-row { display: flex; align-items: center; gap: 8px; background: #f8fafc; padding: 6px 10px; border: 1px solid #e2e8f0; border-radius: 6px; }
     .input-row span { font-size: 12px; color: var(--text-muted); font-weight: 600; width: 100px; }
-    .student-input, .parent-input { flex: 1; border: 1px solid #cbd5e1; font-weight: normal; }
-    .student-input:focus, .parent-input:focus { border-color: var(--secondary); box-shadow: 0 0 0 2px #dbeafe; background-color: white; }
+    .student-input,.parent-input { flex: 1; border: 1px solid #cbd5e1; font-weight: normal; }
+    .student-input:focus,.parent-input:focus { border-color: var(--secondary); box-shadow: 0 0 0 2px #dbeafe; background-color: white; }
     .info-empty-card { font-size: 13px; color: var(--text-muted); text-align: center; padding: 10px; background: #f1f5f9; border-radius: 6px; }
-
     .parent-register-box { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 16px; margin-bottom: 16px; }
     .parent-register-grid { display: grid; grid-template-columns: 2fr 2fr 2fr 1.5fr 1.5fr; gap: 8px; align-items: center; }
-    @media (max-width: 650px) { .parent-register-grid { grid-template-columns: 1fr; } }
-
+    @media (max-width:650px) { .parent-register-grid { grid-template-columns: 1fr; } }
     .row-btn { border: none; padding: 6px 10px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 12px; text-align: center; }
     .row-btn-add { background: #2563eb; color: white; width: 100%; padding: 10px; font-size: 13px; }
     .row-btn-del { background: #ef4444; color: white; }
-
-    .action-bar { display: flex; gap: 10px; margin-top: 20px; position: sticky; bottom: 10px; background: rgba(248,250,252,0.9); padding: 10px 0; flex-wrap: wrap; }
-    .btn { flex: 1; min-width: 150px; padding: 14px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px; transition: background 0.2s; text-align: center; box-shadow: var(--shadow); }
+    .action-bar { display: flex; gap: 10px; margin-top: 20px; position: sticky; bottom: 10px; background: rgba(248,250,252,.9); padding: 10px 0; flex-wrap: wrap; }
+    .btn { flex: 1; min-width: 150px; padding: 14px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px; transition: background .2s; text-align: center; box-shadow: var(--shadow); }
     .btn-primary { background: var(--primary); color: white; }
     .btn-success { background: #16a34a; color: white; }
     .btn-danger { background: #dc2626; color: white; }
-    .btn:disabled { background: #cbd5e1 !important; color: #94a3b8 !important; cursor: not-allowed; box-shadow: none; }
-
+    .btn:disabled { background: #cbd5e1!important; color: #94a3b8!important; cursor: not-allowed; box-shadow: none; }
     .search-box { display: flex; gap: 8px; margin-bottom: 14px; }
     .search-input { flex: 1; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; outline: none; }
     .search-btn { background: var(--primary); color: white; border: none; padding: 0 20px; border-radius: 8px; font-weight: bold; cursor: pointer; }
     .search-result { padding: 14px; background: #f0fdf4; border: 1px dashed #bbf7d0; border-radius: 8px; font-size: 14px; display: none; margin-top: 10px; line-height: 1.7; }
     .search-result.show { display: block; }
-
     .chart-container { position: relative; margin: 10px auto; height: 240px; width: 100%; }
 
-    /* ══════════════════════════════════════════
-       청백 통합 명단 탭 전용 스타일
-    ══════════════════════════════════════════ */
-    .roster-view-filter {
-      display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap;
-    }
-    .roster-view-filter select, .roster-view-filter button {
-      padding: 9px 14px; border: 1px solid #cbd5e1; border-radius: 8px;
-      font-size: 13px; font-weight: bold; outline: none; background: white; cursor: pointer;
-    }
-    .roster-view-filter button {
-      background: var(--primary); color: white; border-color: var(--primary);
-      transition: background 0.2s;
-    }
-    .roster-view-filter button:hover { background: #1e3a8a; }
-
-    /* 뷰 모드 토글 */
+    /* 청백명단 */
+    .roster-view-filter { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+    .roster-view-filter select,.roster-view-filter button { padding: 9px 14px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13px; font-weight: bold; outline: none; background: white; cursor: pointer; }
+    .roster-view-filter button { background: var(--primary); color: white; border-color: var(--primary); }
     .view-toggle { display: flex; gap: 6px; margin-bottom: 16px; }
-    .view-toggle button {
-      flex: 1; padding: 9px; border: 1px solid #e2e8f0; border-radius: 8px;
-      font-size: 12px; font-weight: bold; cursor: pointer; background: white;
-      color: var(--text-muted); transition: all 0.2s;
-    }
-    .view-toggle button.active {
-      background: var(--primary); color: white; border-color: var(--primary);
-    }
-
-    /* 청백 2단 컬럼 */
-    .team-columns {
-      display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
-    }
-    .team-column-blue {
-      border: 2px solid #bfdbfe; border-radius: 10px; overflow: hidden;
-    }
-    .team-column-white {
-      border: 2px solid #e2e8f0; border-radius: 10px; overflow: hidden;
-    }
-    .team-col-header {
-      padding: 10px 14px; font-weight: 800; font-size: 14px; text-align: center;
-    }
-    .team-col-header.blue { background: #2563eb; color: white; }
-    .team-col-header.white { background: #475569; color: white; }
-
-    /* 이벤트 섹션 */
-    .roster-view-section {
-      margin-bottom: 18px;
-    }
-    .roster-view-section-title {
-      font-size: 13px; font-weight: 800; color: var(--primary);
-      background: var(--primary-light); padding: 6px 12px;
-      border-radius: 6px; margin-bottom: 8px; display: flex;
-      justify-content: space-between; align-items: center;
-    }
-    .roster-view-section-title .all-badge {
-      font-size: 10px; background: #d1fae5; color: #065f46;
-      padding: 2px 7px; border-radius: 10px;
-    }
-    .roster-name-list {
-      display: flex; flex-wrap: wrap; gap: 6px;
-    }
-    .roster-name-chip {
-      display: inline-flex; align-items: center; gap: 4px;
-      background: #f1f5f9; border: 1px solid #e2e8f0;
-      padding: 4px 10px; border-radius: 20px; font-size: 12px;
-      color: var(--text-main); font-weight: 600;
-    }
-    .roster-name-chip .slot-label {
-      font-size: 10px; color: var(--text-muted); font-weight: normal;
-    }
+    .view-toggle button { flex: 1; padding: 9px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 12px; font-weight: bold; cursor: pointer; background: white; color: var(--text-muted); transition: all .2s; }
+    .view-toggle button.active { background: var(--primary); color: white; border-color: var(--primary); }
+    .team-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .team-column-blue { border: 2px solid #bfdbfe; border-radius: 10px; overflow: hidden; }
+    .team-column-white { border: 2px solid #e2e8f0; border-radius: 10px; overflow: hidden; }
+    .team-col-header { padding: 10px 14px; font-weight: 800; font-size: 14px; text-align: center; }
+    .team-col-header.blue { background: #2563eb; color: white; } .team-col-header.white { background: #475569; color: white; }
+    .roster-view-section { margin-bottom: 18px; }
+    .roster-view-section-title { font-size: 13px; font-weight: 800; color: var(--primary); background: var(--primary-light); padding: 6px 12px; border-radius: 6px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+    .roster-name-list { display: flex; flex-wrap: wrap; gap: 6px; }
+    .roster-name-chip { display: inline-flex; align-items: center; gap: 4px; background: #f1f5f9; border: 1px solid #e2e8f0; padding: 4px 10px; border-radius: 20px; font-size: 12px; color: var(--text-main); font-weight: 600; }
+    .roster-name-chip .slot-label { font-size: 10px; color: var(--text-muted); font-weight: normal; }
     .roster-name-chip.empty { color: #94a3b8; border-style: dashed; font-weight: normal; font-style: italic; }
-
-    /* 테이블 뷰 모드 */
     .roster-table-view table th { font-size: 12px; padding: 8px 10px; }
     .roster-table-view table td { font-size: 12px; padding: 8px 10px; }
     .chip-blue { background: #dbeafe; color: #1e40af; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; white-space: nowrap; }
     .chip-white { background: #f1f5f9; color: #475569; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; white-space: nowrap; }
-
-    /* 새로고침 버튼 */
-    .refresh-btn {
-      background: none; border: 1px solid #cbd5e1; padding: 6px 12px;
-      border-radius: 6px; font-size: 12px; cursor: pointer; color: var(--text-muted);
-      display: flex; align-items: center; gap: 4px; transition: all 0.2s;
-    }
+    .refresh-btn { background: none; border: 1px solid #cbd5e1; padding: 6px 12px; border-radius: 6px; font-size: 12px; cursor: pointer; color: var(--text-muted); display: flex; align-items: center; gap: 4px; transition: all .2s; }
     .refresh-btn:hover { background: var(--primary-light); color: var(--primary); border-color: var(--primary); }
-
-    /* 종목별 뷰 */
-    .event-roster-block {
-      border: 1px solid #e2e8f0; border-radius: 10px;
-      margin-bottom: 14px; overflow: hidden;
-    }
-    .event-roster-title {
-      padding: 10px 14px; background: #f8fafc;
-      font-weight: 700; font-size: 14px; color: var(--primary);
-      border-bottom: 1px solid #e2e8f0; display: flex;
-      justify-content: space-between; align-items: center;
-    }
-    .event-roster-body {
-      display: grid; grid-template-columns: 1fr 1fr;
-    }
-    .event-roster-team {
-      padding: 12px 14px;
-    }
-    .event-roster-team:first-child {
-      border-right: 1px solid #e2e8f0;
-    }
-    .event-roster-team-label {
-      font-size: 11px; font-weight: 800; margin-bottom: 8px;
-    }
-    .event-roster-team-label.blue { color: #2563eb; }
-    .event-roster-team-label.white { color: #475569; }
-
-    /* 학년 구분 헤더 */
-    .grade-section-header {
-      background: linear-gradient(135deg, #1e40af, #3b82f6);
-      color: white; padding: 10px 16px; border-radius: 8px;
-      margin-bottom: 12px; margin-top: 8px;
-      font-weight: 800; font-size: 15px; display: flex;
-      justify-content: space-between; align-items: center;
-    }
-    .grade-section-header span.sub { font-size: 12px; opacity: 0.8; font-weight: normal; }
-
-    /* 로딩 스피너 */
-    .loading-spinner {
-      text-align: center; padding: 40px; color: var(--text-muted); font-size: 14px;
-    }
-    .spinner { display: inline-block; width: 24px; height: 24px; border: 3px solid #e2e8f0;
-      border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; vertical-align: middle; margin-right: 8px; }
+    .event-roster-block { border: 1px solid #e2e8f0; border-radius: 10px; margin-bottom: 14px; overflow: hidden; }
+    .event-roster-title { padding: 10px 14px; background: #f8fafc; font-weight: 700; font-size: 14px; color: var(--primary); border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; }
+    .event-roster-body { display: grid; grid-template-columns: 1fr 1fr; }
+    .event-roster-team { padding: 12px 14px; }
+    .event-roster-team:first-child { border-right: 1px solid #e2e8f0; }
+    .event-roster-team-label { font-size: 11px; font-weight: 800; margin-bottom: 8px; }
+    .event-roster-team-label.blue { color: #2563eb; } .event-roster-team-label.white { color: #475569; }
+    .grade-section-header { background: linear-gradient(135deg,#1e40af,#3b82f6); color: white; padding: 10px 16px; border-radius: 8px; margin-bottom: 12px; margin-top: 8px; font-weight: 800; font-size: 15px; display: flex; justify-content: space-between; align-items: center; }
+    .grade-section-header span.sub { font-size: 12px; opacity: .8; font-weight: normal; }
+    .loading-spinner { text-align: center; padding: 40px; color: var(--text-muted); font-size: 14px; }
+    .spinner { display: inline-block; width: 24px; height: 24px; border: 3px solid #e2e8f0; border-top-color: var(--primary); border-radius: 50%; animation: spin .8s linear infinite; vertical-align: middle; margin-right: 8px; }
     @keyframes spin { to { transform: rotate(360deg); } }
-
-    /* 통계 요약 */
-    .roster-stats {
-      display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px;
-    }
-    .stat-card {
-      background: white; border: 1px solid #e2e8f0; border-radius: 8px;
-      padding: 12px; text-align: center;
-    }
+    .roster-stats { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 16px; }
+    .stat-card { background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; text-align: center; }
     .stat-card .stat-num { font-size: 22px; font-weight: 800; color: var(--primary); }
     .stat-card .stat-label { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
 
-    @media (max-width: 700px) {
-      .tabs { grid-template-columns: repeat(4, 1fr); }
+    /* ★ 타임라인 관리 탭 전용 스타일 */
+    .tl-manage-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 14px; border: 1px solid #e2e8f0; border-radius: 8px;
+      margin-bottom: 8px; background: white; transition: background .15s;
+    }
+    .tl-manage-row:hover { background: #f8fafc; }
+    .tl-manage-left { display: flex; align-items: center; gap: 10px; }
+    .tl-order-num { font-size: 12px; color: #94a3b8; font-weight: 700; width: 22px; text-align: center; }
+    .tl-manage-title { font-size: 14px; font-weight: 600; }
+    .tl-manage-right { display: flex; align-items: center; gap: 8px; }
+    .tl-status-badge { font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 99px; white-space: nowrap; }
+    .tl-status-badge.done     { background: #dcfce7; color: #166534; }
+    .tl-status-badge.current  { background: #dbeafe; color: #1e40af; }
+    .tl-status-badge.upcoming { background: #f1f5f9; color: #475569; }
+    .tl-status-select {
+      padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 6px;
+      font-size: 12px; font-weight: bold; outline: none; cursor: pointer;
+      background: white; transition: border-color .15s;
+    }
+    .tl-status-select:focus { border-color: var(--secondary); }
+    .tl-status-select:disabled { background: #f1f5f9; cursor: not-allowed; }
+    .tl-quick-btns { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; }
+    .tl-quick-btn { padding: 8px 14px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; background: white; transition: all .15s; }
+    .tl-quick-btn:hover { background: var(--primary-light); color: var(--primary); border-color: var(--primary); }
+    .tl-quick-btn:disabled { opacity: .4; cursor: not-allowed; }
+
+    @media (max-width:700px) {
+      .tabs { grid-template-columns: repeat(4,1fr); }
       .input-grid-2col { grid-template-columns: 1fr; }
       .hero h1 { font-size: 22px; }
       .action-bar { flex-direction: column; }
@@ -280,21 +173,19 @@
       .team-columns { grid-template-columns: 1fr; }
       .event-roster-body { grid-template-columns: 1fr; }
       .event-roster-team:first-child { border-right: none; border-bottom: 1px solid #e2e8f0; }
-      .roster-stats { grid-template-columns: repeat(2, 1fr); }
+      .roster-stats { grid-template-columns: repeat(2,1fr); }
+      .tl-manage-row { flex-direction: column; align-items: flex-start; gap: 8px; }
     }
   </style>
 </head>
 <body>
 <div class="container">
-
   <div class="hero">
     <span class="badge">🏆 2026학년도</span>
     <h1>바래미 체육 한마당</h1>
     <p class="subtitle">함께 뛰고 함께 웃는 우리들의 축제</p>
     <div class="hero-info">
-      <span>📅 2026년 5월 22일(금)</span>
-      <span>🕗 08:40 ~ 15:35</span>
-      <span>📍 운동장</span>
+      <span>📅 2026년 5월 22일(금)</span><span>🕗 08:40 ~ 15:35</span><span>📍 운동장</span>
     </div>
   </div>
 
@@ -308,7 +199,7 @@
     <button class="admin-btn" id="adminToggleBtn" onclick="toggleAdminMode()">체육교사 인증</button>
   </div>
 
-  <!-- 탭 7개: 청백명단 추가 -->
+  <!-- 탭 8개 -->
   <div class="tabs">
     <button class="tab-btn active" onclick="switchTab(event,'tab-schedule')"><span>📋</span>행사일정</button>
     <button class="tab-btn" onclick="switchTab(event,'tab-events')"><span>🎯</span>종목요강</button>
@@ -317,6 +208,7 @@
     <button class="tab-btn" onclick="switchTab(event,'tab-parents')"><span>👪</span>학부모참석</button>
     <button class="tab-btn" onclick="switchTab(event,'tab-allroster'); loadAllRosterView()"><span>🏅</span>청백명단</button>
     <button class="tab-btn" onclick="switchTab(event,'tab-search')"><span>🔎</span>통합검색</button>
+    <button class="tab-btn" onclick="switchTab(event,'tab-timeline-manage'); loadTimelineManage()"><span>⏱</span>진행관리</button>
   </div>
 
   <!-- 행사일정 -->
@@ -332,7 +224,7 @@
             <tr><td>09:35~10:20</td><td><strong>고무신 양궁</strong> / <strong>단체줄넘기</strong> / <strong>지구 나르기</strong></td><td>운동장</td></tr>
             <tr><td>10:20~11:10</td><td><strong>대형 에어 타이어 릴레이</strong> / <strong>토끼와 거북이</strong></td><td>운동장</td></tr>
             <tr><td>11:10~12:10</td><td><strong>장대를 높여라</strong> / <strong>대표 계주</strong></td><td>운동장</td></tr>
-            <tr style="background-color:#fffbeb;font-weight:600;"><td>12:10~13:00</td><td>🍱 중식 및 점심시간</td><td>급식실</td></tr>
+            <tr style="background-color:#fffbeb;font-weight:600;"><td>12:10~13:00</td><td>🍱 점심시간</td><td>급식실</td></tr>
             <tr><td>13:00~13:45</td><td><strong>리셋 미션 레이스</strong> / <strong>학년별 줄다리기</strong></td><td>운동장</td></tr>
             <tr><td>13:45~14:40</td><td><strong>다산 한마음 계주</strong> (전교생 피날레 릴레이)</td><td>운동장</td></tr>
             <tr><td>14:40~15:35</td><td><strong>럭키드로우 / 폐회식 및 종합 시상 / 청소</strong></td><td>운동장</td></tr>
@@ -344,10 +236,7 @@
 
   <!-- 종목요강 -->
   <div id="tab-events" class="tab-content">
-    <div class="card">
-      <h2>🏃 경기 종목별 참가 요강</h2>
-      <div id="events-accordion"></div>
-    </div>
+    <div class="card"><h2>🏃 경기 종목별 참가 요강</h2><div id="events-accordion"></div></div>
   </div>
 
   <!-- 공식배점 -->
@@ -383,12 +272,8 @@
         <span style="color:#e11d48;font-weight:bold;">⚠️ 선택 출전 종목은 1인 2종목 이상 출전 금지</span>
       </div>
       <div class="filter-box">
-        <select id="manageGrade" onchange="renderRosterForm()">
-          <option value="1학년">1학년</option><option value="2학년">2학년</option><option value="3학년">3학년</option>
-        </select>
-        <select id="manageTeam" onchange="renderRosterForm()">
-          <option value="청팀(1반팀)">🔵 청팀 (1반팀)</option><option value="백팀(2반팀)">⚪ 백팀 (2반팀)</option>
-        </select>
+        <select id="manageGrade" onchange="renderRosterForm()"><option value="1학년">1학년</option><option value="2학년">2학년</option><option value="3학년">3학년</option></select>
+        <select id="manageTeam" onchange="renderRosterForm()"><option value="청팀(1반팀)">🔵 청팀 (1반팀)</option><option value="백팀(2반팀)">⚪ 백팀 (2반팀)</option></select>
       </div>
       <div id="rosterFormContainer" class="roster-stack"></div>
       <div class="action-bar">
@@ -407,12 +292,8 @@
         🔓 정보를 입력하고 등록하면 누계로 추가됩니다. 완료 후 <strong>'최종 제출'</strong>을 눌러 마감하세요.
       </div>
       <div class="filter-box">
-        <select id="parentsGrade" onchange="renderParentsForm()">
-          <option value="1학년">1학년</option><option value="2학년">2학년</option><option value="3학년">3학년</option>
-        </select>
-        <select id="parentsTeam" onchange="renderParentsForm()">
-          <option value="청팀(1반팀)">🔵 청팀 (1반팀)</option><option value="백팀(2반팀)">⚪ 백팀 (2반팀)</option>
-        </select>
+        <select id="parentsGrade" onchange="renderParentsForm()"><option value="1학년">1학년</option><option value="2학년">2학년</option><option value="3학년">3학년</option></select>
+        <select id="parentsTeam" onchange="renderParentsForm()"><option value="청팀(1반팀)">🔵 청팀 (1반팀)</option><option value="백팀(2반팀)">⚪ 백팀 (2반팀)</option></select>
       </div>
       <div class="parent-register-box" id="parentInputBox">
         <h4 style="font-size:14px;margin-bottom:10px;color:var(--primary);">✍️ 개인 참석 정보 입력</h4>
@@ -420,21 +301,14 @@
           <input type="text" id="pRegRelation" class="parent-input" placeholder="학생과의 관계 (예: 1반 김철수 부)">
           <input type="text" id="pRegName" class="parent-input" placeholder="학부모 성함">
           <input type="text" id="pRegPhone" class="parent-input" placeholder="연락처 (휴대폰)">
-          <select id="pRegStatus" class="parent-input">
-            <option value="참석">참석</option>
-            <option value="미정">미정</option>
-          </select>
+          <select id="pRegStatus" class="parent-input"><option value="참석">참석</option><option value="미정">미정</option></select>
           <button class="row-btn row-btn-add" id="pRegBtn" onclick="registerIndividualParent()">➕ 명단 등록</button>
         </div>
       </div>
-      <h3 style="font-size:15px;font-weight:bold;margin-top:20px;margin-bottom:6px;">
-        📊 누계 등록 현황: <span id="parentCountBadge" style="color:red;font-weight:bold;">0</span>명
-      </h3>
+      <h3 style="font-size:15px;font-weight:bold;margin-top:20px;margin-bottom:6px;">📊 누계 등록 현황: <span id="parentCountBadge" style="color:red;font-weight:bold;">0</span>명</h3>
       <div class="table-wrapper">
         <table>
-          <thead>
-            <tr><th style="width:5%">번호</th><th style="width:25%">관계</th><th style="width:25%">성함</th><th style="width:25%">연락처</th><th style="width:12%">참석</th><th style="width:8%">관리</th></tr>
-          </thead>
+          <thead><tr><th style="width:5%">번호</th><th style="width:25%">관계</th><th style="width:25%">성함</th><th style="width:25%">연락처</th><th style="width:12%">참석</th><th style="width:8%">관리</th></tr></thead>
           <tbody id="parentsTableBody"></tbody>
         </table>
       </div>
@@ -446,54 +320,28 @@
     </div>
   </div>
 
-  <!-- ★ 청백 통합 명단 탭 ★ -->
+  <!-- 청백명단 -->
   <div id="tab-allroster" class="tab-content">
     <div class="card">
       <h2>🏅 청백 통합 출전 명단</h2>
-
-      <!-- 필터 & 새로고침 -->
-      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:12px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
         <div class="roster-view-filter">
-          <select id="arGrade" onchange="renderAllRoster()">
-            <option value="all">전체 학년</option>
-            <option value="1학년">1학년</option>
-            <option value="2학년">2학년</option>
-            <option value="3학년">3학년</option>
-          </select>
-          <select id="arEvent" onchange="renderAllRoster()">
-            <option value="all">전체 종목</option>
-          </select>
+          <select id="arGrade" onchange="renderAllRoster()"><option value="all">전체 학년</option><option value="1학년">1학년</option><option value="2학년">2학년</option><option value="3학년">3학년</option></select>
+          <select id="arEvent" onchange="renderAllRoster()"><option value="all">전체 종목</option></select>
         </div>
         <button class="refresh-btn" onclick="loadAllRosterView()">🔄 새로고침</button>
       </div>
-
-      <!-- 뷰 모드 전환 -->
       <div class="view-toggle">
         <button id="vbtnEvent" class="active" onclick="setArView('event')">📌 종목별 보기</button>
         <button id="vbtnGrade" onclick="setArView('grade')">🎓 학년별 보기</button>
         <button id="vbtnTable" onclick="setArView('table')">📋 표 형식 보기</button>
       </div>
-
-      <!-- 통계 요약 -->
       <div class="roster-stats" id="arStats">
-        <div class="stat-card">
-          <div class="stat-num" id="arStatTotal">-</div>
-          <div class="stat-label">총 출전 선수 수</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-num" style="color:#2563eb;" id="arStatBlue">-</div>
-          <div class="stat-label">🔵 청팀 출전</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-num" style="color:#475569;" id="arStatWhite">-</div>
-          <div class="stat-label">⚪ 백팀 출전</div>
-        </div>
+        <div class="stat-card"><div class="stat-num" id="arStatTotal">-</div><div class="stat-label">총 출전 선수 수</div></div>
+        <div class="stat-card"><div class="stat-num" style="color:#2563eb;" id="arStatBlue">-</div><div class="stat-label">🔵 청팀 출전</div></div>
+        <div class="stat-card"><div class="stat-num" style="color:#475569;" id="arStatWhite">-</div><div class="stat-label">⚪ 백팀 출전</div></div>
       </div>
-
-      <!-- 명단 출력 영역 -->
-      <div id="allRosterContent">
-        <div class="loading-spinner"><span class="spinner"></span> 명단 불러오는 중...</div>
-      </div>
+      <div id="allRosterContent"><div class="loading-spinner"><span class="spinner"></span> 명단 불러오는 중...</div></div>
     </div>
   </div>
 
@@ -509,126 +357,128 @@
     </div>
   </div>
 
+  <!-- ★ 타임라인 진행 관리 탭 -->
+  <div id="tab-timeline-manage" class="tab-content">
+    <div class="card">
+      <h2>⏱ 타임라인 진행 상태 관리</h2>
+      <div id="tlManageNotice" style="background:#eff6ff;border:1px solid #bfdbfe;padding:12px;border-radius:6px;font-size:13px;margin-bottom:16px;color:#1e40af;line-height:1.5;">
+        🔒 <strong>체육교사 인증</strong> 후 각 순서의 상태를 변경할 수 있습니다.<br>
+        변경 즉시 <strong>당일 앱(학생·학부모 화면)</strong>에 실시간 반영됩니다.
+      </div>
+      <div class="tl-quick-btns" id="tlQuickBtns"></div>
+      <div id="tlManageList"><div class="loading-spinner"><span class="spinner"></span> 불러오는 중...</div></div>
+    </div>
+  </div>
+
 </div>
 
 <script>
-// =====================================================
-// Supabase 설정
-// =====================================================
 const SUPABASE_URL = 'https://vdheulzqesamqcbebyej.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZkaGV1bHpxZXNhbXFjYmVieWVqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxMzY1NDksImV4cCI6MjA5NDcxMjU0OX0.cK2czWZvpUKVtMnBRy14FL34eGFoG8SOJIgEBaskWEI';
-
 const { createClient } = supabase;
 const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// =====================================================
-// 앱 상수
-// =====================================================
 const ADMIN_PASSWORD = "0070";
 let isAdmin = false;
 
 const classGenderSpecs = {
-  "1학년": {
-    "청팀(1반팀)": { male: 13, female: 10, start: 1, total: 23 },
-    "백팀(2반팀)":  { male: 13, female: 9,  start: 24, total: 22 }
-  },
-  "2학년": {
-    "청팀(1반팀)": { male: 12, female: 12, start: 46, total: 24 },
-    "백팀(2반팀)":  { male: 12, female: 12, start: 70, total: 24 }
-  },
-  "3학년": {
-    "청팀(1반팀)": { male: 10, female: 15, start: 94,  total: 25 },
-    "백팀(2반팀)":  { male: 10, female: 15, start: 119, total: 25 }
-  }
+  "1학년": { "청팀(1반팀)":{ male:13,female:10,start:1,total:23 }, "백팀(2반팀)":{ male:13,female:9,start:24,total:22 } },
+  "2학년": { "청팀(1반팀)":{ male:12,female:12,start:46,total:24 }, "백팀(2반팀)":{ male:12,female:12,start:70,total:24 } },
+  "3학년": { "청팀(1반팀)":{ male:10,female:15,start:94,total:25 }, "백팀(2반팀)":{ male:10,female:15,start:119,total:25 } }
 };
 
 const officialEvents = [
-  { name: "OX 퀴즈",            type: "all",    desc: "시사, 상식 및 학교 관련 서바이벌 퀴즈",                                                    req: "학년 전원 참여", scoreRule: "100 / 80" },
-  { name: "파도를 넘어서",       type: "roster", desc: "대표 2명이 봉이 연결된 줄을 들고 전원 발밑과 머리 위를 통과하는 레이스",                     req: "줄잡이 대표 2명 필수",         slots: ["줄잡이 1","줄잡이 2"],                                                                                   layout: "1col", scoreRule: "100 / 80" },
-  { name: "고무신 양궁",         type: "roster", desc: "고무신을 발로 차 디딤판 과녁에 안착시키는 누적 점수전",                                       req: "남2 여2 담임1",               slots: ["남학생 대표 1","남학생 대표 2","여학생 대표 1","여학생 대표 2","담임선생님"],                           layout: "2col", scoreRule: "100 / 80" },
-  { name: "단체 줄넘기",         type: "roster", desc: "제한 시간 내 가장 많은 연속 줄넘기 회전수 기록",                                             req: "줄잡이 2, 남점퍼 5, 여점퍼 5", slots: ["줄잡이 1","줄잡이 2","남 주자 1","남 주자 2","남 주자 3","남 주자 4","남 주자 5","여 주자 1","여 주자 2","여 주자 3","여 주자 4","여 주자 5"], layout: "2col", scoreRule: "100 / 70" },
-  { name: "지구 나르기",         type: "all",    desc: "2열 대형 사이로 거대한 지구 공을 머리 위로 굴려 왕복",                                        req: "학년 전원 참여", scoreRule: "100 / 70" },
-  { name: "대형 에어 타이어 릴레이", type: "roster", desc: "3인 1조로 대형 타이어를 굴려 릴레이 반환점 통과",                                        req: "남3 여3",                     slots: ["남 주자 1","남 주자 2","남 주자 3","여 주자 1","여 주자 2","여 주자 3"],                               layout: "2col", scoreRule: "100 / 70" },
-  { name: "토끼와 거북이",       type: "roster", desc: "4인 1조가 대형 협동 튜브 속에 들어가 발을 맞춰 달리는 레이스",                               req: "남4 여4",                     slots: ["남 주자 1","남 주자 2","남 주자 3","남 주자 4","여 주자 1","여 주자 2","여 주자 3","여 주자 4"],       layout: "2col", scoreRule: "100 / 80" },
-  { name: "장대를 높여라",       type: "all",    desc: "규정 시간 동안 바구니 탑에 볼풀 공을 던져 넣는 스피드전",                                    req: "학년 전원 참여", scoreRule: "100 / 80" },
-  { name: "대표 계주",           type: "roster", desc: "학년 대표와 교사 대표가 연계하여 뛰는 트랙 계주",                                            req: "남학생1, 여학생1, 남교사1, 여교사1", slots: ["남학생 주자","여학생 주자","남교사 대표","여교사 대표"],                                           layout: "2col", scoreRule: "200 / 150" },
-  { name: "리셋 미션 레이스",    type: "roster", desc: "팔굽혀펴기, 제기차기, 투호 등 단계별 미션을 연속 해결하는 장애물전",                         req: "남1 여1",                     slots: ["남학생 대표","여학생 대표"],                                                                               layout: "1col", scoreRule: "100 / 80" },
-  { name: "학년별 줄다리기",     type: "all",    desc: "인원수를 맞추어 일제히 당기는 파워 협동전 (3판 2선승)",                                       req: "학년 전원 참여", scoreRule: "200 / 150" },
-  { name: "다산 한마음 계주",    type: "roster", desc: "학급 전원이 바통을 이어달리는 초대형 피날레 레이스",                                          req: "★ 학급별 남녀 전원 기입",     slots: [],                                                                                                         layout: "2col", scoreRule: "200 / 150" }
+  { name:"OX 퀴즈",                  type:"all",    desc:"시사, 상식 및 학교 관련 서바이벌 퀴즈", req:"학년 전원 참여", scoreRule:"100 / 80" },
+  { name:"파도를 넘어서",             type:"roster", desc:"대표 2명이 봉이 연결된 줄을 들고 전원 발밑과 머리 위를 통과하는 레이스", req:"줄잡이 대표 2명 필수", slots:["줄잡이 1","줄잡이 2"], layout:"1col", scoreRule:"100 / 80" },
+  { name:"고무신 양궁",               type:"roster", desc:"고무신을 발로 차 디딤판 과녁에 안착시키는 누적 점수전", req:"남2 여2 담임1", slots:["남학생 대표 1","남학생 대표 2","여학생 대표 1","여학생 대표 2","담임선생님"], layout:"2col", scoreRule:"100 / 80" },
+  { name:"단체 줄넘기",               type:"roster", desc:"제한 시간 내 가장 많은 연속 줄넘기 회전수 기록", req:"줄잡이 2, 남점퍼 5, 여점퍼 5", slots:["줄잡이 1","줄잡이 2","남 주자 1","남 주자 2","남 주자 3","남 주자 4","남 주자 5","여 주자 1","여 주자 2","여 주자 3","여 주자 4","여 주자 5"], layout:"2col", scoreRule:"100 / 70" },
+  { name:"지구 나르기",               type:"all",    desc:"2열 대형 사이로 거대한 지구 공을 머리 위로 굴려 왕복", req:"학년 전원 참여", scoreRule:"100 / 70" },
+  { name:"대형 에어 타이어 릴레이",   type:"roster", desc:"3인 1조로 대형 타이어를 굴려 릴레이 반환점 통과", req:"남3 여3", slots:["남 주자 1","남 주자 2","남 주자 3","여 주자 1","여 주자 2","여 주자 3"], layout:"2col", scoreRule:"100 / 70" },
+  { name:"토끼와 거북이",             type:"roster", desc:"4인 1조가 대형 협동 튜브 속에 들어가 발을 맞춰 달리는 레이스", req:"남4 여4", slots:["남 주자 1","남 주자 2","남 주자 3","남 주자 4","여 주자 1","여 주자 2","여 주자 3","여 주자 4"], layout:"2col", scoreRule:"100 / 80" },
+  { name:"장대를 높여라",             type:"all",    desc:"규정 시간 동안 바구니 탑에 볼풀 공을 던져 넣는 스피드전", req:"학년 전원 참여", scoreRule:"100 / 80" },
+  { name:"대표 계주",                 type:"roster", desc:"학년 대표와 교사 대표가 연계하여 뛰는 트랙 계주", req:"남학생1, 여학생1, 남교사1, 여교사1", slots:["남학생 주자","여학생 주자","남교사 대표","여교사 대표"], layout:"2col", scoreRule:"200 / 150" },
+  { name:"리셋 미션 레이스",          type:"roster", desc:"팔굽혀펴기, 제기차기, 투호 등 단계별 미션을 연속 해결하는 장애물전", req:"남1 여1", slots:["남학생 대표","여학생 대표"], layout:"1col", scoreRule:"100 / 80" },
+  { name:"학년별 줄다리기",           type:"all",    desc:"인원수를 맞추어 일제히 당기는 파워 협동전 (3판 2선승)", req:"학년 전원 참여", scoreRule:"200 / 150" },
+  { name:"다산 한마음 계주",          type:"roster", desc:"학급 전원이 바통을 이어달리는 초대형 피날레 레이스", req:"★ 학급별 남녀 전원 기입", slots:[], layout:"2col", scoreRule:"200 / 150" }
 ];
 
-// =====================================================
-// 상태 변수
-// =====================================================
-let currentRoster = {};
-let matchScores   = {};
-let lockedRosters = {};
-let parentsData   = {};
-let lockedParents = {};
-let scoreChartInstance = null;
+// ★ 타임라인 메타 정보
+const TL_META = [
+  { id:'open',   title:'개회식' },
+  { id:'warm',   title:'준비체조' },
+  { id:'ox',     title:'OX 퀴즈' },
+  { id:'wave',   title:'파도를 넘어서' },
+  { id:'arch',   title:'고무신 양궁' },
+  { id:'jump',   title:'단체 줄넘기' },
+  { id:'earth',  title:'지구 나르기' },
+  { id:'tire',   title:'대형 에어 타이어 릴레이' },
+  { id:'rabbit', title:'토끼와 거북이' },
+  { id:'pole',   title:'장대를 높여라' },
+  { id:'relay1', title:'대표 계주' },
+  { id:'lunch',  title:'🍱 점심시간' },
+  { id:'reset',  title:'리셋 미션 레이스' },
+  { id:'tugwar', title:'학년별 줄다리기' },
+  { id:'relay2', title:'다산 한마음 계주' },
+  { id:'close',  title:'럭키드로우 · 폐회식 · 시상' },
+];
 
-// 청백명단 뷰 상태
-let arViewMode = 'event'; // 'event' | 'grade' | 'table'
+let currentRoster = {}, matchScores = {}, lockedRosters = {}, parentsData = {}, lockedParents = {};
+let scoreChartInstance = null, arViewMode = 'event';
+let tlStatusMap = {}; // ★ 타임라인 상태 맵
 
-// =====================================================
-// 동기화 상태 표시
-// =====================================================
+// ── 동기화 상태
 function setSyncStatus(state, msg) {
-  const bar  = document.getElementById('syncBar');
-  const dot  = document.getElementById('syncDot');
-  const text = document.getElementById('syncText');
-  dot.className = 'sync-dot ' + state;
-  text.textContent = msg;
-  bar.className = 'sync-bar ' + (state === 'error' ? 'error' : state === 'syncing' ? 'syncing' : '');
-  if (state === 'ok') {
-    document.getElementById('syncTime').textContent = '최근 동기화: ' + new Date().toLocaleTimeString('ko-KR');
-  }
+  const bar = document.getElementById('syncBar'), dot = document.getElementById('syncDot'), text = document.getElementById('syncText');
+  dot.className = 'sync-dot ' + state; text.textContent = msg;
+  bar.className = 'sync-bar ' + (state==='error'?'error':state==='syncing'?'syncing':'');
+  if (state==='ok') document.getElementById('syncTime').textContent = '최근 동기화: ' + new Date().toLocaleTimeString('ko-KR');
 }
 
-// =====================================================
-// Supabase 초기 데이터 로드
-// =====================================================
+// ── Supabase 초기 로드
 async function initSupabase() {
-  setSyncStatus('syncing', '☁️ Supabase 서버에 연결 중...');
+  setSyncStatus('syncing','☁️ Supabase 서버에 연결 중...');
   try {
-    const { data: rosterRows, error: rErr } = await db.from('roster').select('*');
-    if (rErr) throw rErr;
+    const [{ data:rosterRows,error:rErr },{ data:scoreRows,error:sErr },{ data:tlRows,error:tErr }] = await Promise.all([
+      db.from('roster').select('*'),
+      db.from('scores').select('*'),
+      db.from('timeline').select('*'),
+    ]);
+    if (rErr) throw rErr; if (sErr) throw sErr; if (tErr) throw tErr;
+
     currentRoster = {};
-    (rosterRows || []).forEach(row => {
-      if (!currentRoster[row.grade]) currentRoster[row.grade] = {};
-      if (!currentRoster[row.grade][row.team]) currentRoster[row.grade][row.team] = {};
-      if (!currentRoster[row.grade][row.team][row.event_name]) currentRoster[row.grade][row.team][row.event_name] = {};
-      currentRoster[row.grade][row.team][row.event_name][row.slot] = row.student_name || '';
+    (rosterRows||[]).forEach(row => {
+      if (!currentRoster[row.grade]) currentRoster[row.grade]={};
+      if (!currentRoster[row.grade][row.team]) currentRoster[row.grade][row.team]={};
+      if (!currentRoster[row.grade][row.team][row.event_name]) currentRoster[row.grade][row.team][row.event_name]={};
+      currentRoster[row.grade][row.team][row.event_name][row.slot] = row.student_name||'';
     });
 
-    const { data: scoreRows, error: sErr } = await db.from('scores').select('*');
-    if (sErr) throw sErr;
     matchScores = {};
-    officialEvents.forEach(ev => { matchScores[ev.name] = { blue: 0, white: 0 }; });
-    (scoreRows || []).forEach(row => { matchScores[row.event_name] = { blue: row.blue || 0, white: row.white || 0 }; });
+    officialEvents.forEach(ev => { matchScores[ev.name]={blue:0,white:0}; });
+    (scoreRows||[]).forEach(row => { matchScores[row.event_name]={blue:row.blue||0,white:row.white||0}; });
+
+    tlStatusMap = {};
+    (tlRows||[]).forEach(r => { tlStatusMap[r.event_id]=r.status; });
 
     const savedLocks = localStorage.getItem('barami_roster_locks');
     if (savedLocks) lockedRosters = JSON.parse(savedLocks);
     const savedParentsLocks = localStorage.getItem('barami_parents_locks');
     if (savedParentsLocks) lockedParents = JSON.parse(savedParentsLocks);
 
-    const { data: parentRows, error: pErr } = await db.from('parents').select('*');
+    const { data:parentRows,error:pErr } = await db.from('parents').select('*');
     if (pErr) throw pErr;
     parentsData = {};
-    (parentRows || []).forEach(row => {
-      const key = `${row.grade}_${row.team}`;
-      if (!parentsData[key]) parentsData[key] = [];
-      parentsData[key].push({ id: row.id, relation: row.relation, name: row.name, phone: row.phone, status: row.status });
+    (parentRows||[]).forEach(row => {
+      const key=`${row.grade}_${row.team}`;
+      if (!parentsData[key]) parentsData[key]=[];
+      parentsData[key].push({id:row.id,relation:row.relation,name:row.name,phone:row.phone,status:row.status});
     });
 
-    setSyncStatus('ok', '✅ 서버 연결 완료 — 모든 반이 실시간 동기화됩니다');
-    renderScoreTable();
-    renderRosterForm();
-    renderParentsForm();
-    populateArEventFilter();
-  } catch (e) {
+    setSyncStatus('ok','✅ 서버 연결 완료 — 모든 반이 실시간 동기화됩니다');
+    renderScoreTable(); renderRosterForm(); renderParentsForm(); populateArEventFilter();
+  } catch(e) {
     console.error(e);
-    setSyncStatus('error', '❌ 서버 연결 실패: ' + e.message + ' — localStorage로 대체 동작 중');
+    setSyncStatus('error','❌ 서버 연결 실패: '+e.message+' — localStorage로 대체 동작 중');
     fallbackToLocal();
   }
 }
@@ -638,55 +488,44 @@ function fallbackToLocal() {
   if (savedRoster) currentRoster = JSON.parse(savedRoster);
   const savedScores = localStorage.getItem('barami_live_scores');
   if (savedScores) matchScores = JSON.parse(savedScores);
-  else officialEvents.forEach(ev => { matchScores[ev.name] = { blue: 0, white: 0 }; });
-  renderScoreTable(); renderRosterForm(); renderParentsForm();
-  populateArEventFilter();
+  else officialEvents.forEach(ev=>{ matchScores[ev.name]={blue:0,white:0}; });
+  renderScoreTable(); renderRosterForm(); renderParentsForm(); populateArEventFilter();
 }
 
-// =====================================================
-// 관리자 모드
-// =====================================================
+// ── 관리자 모드
 function toggleAdminMode() {
   if (!isAdmin) {
     const pw = prompt("체육교사 인증번호를 입력하세요:");
-    if (pw === ADMIN_PASSWORD) {
-      isAdmin = true;
-      document.getElementById('adminStatusText').textContent = "🔓 체육교사 권한 (마감 명단 수정 및 잠금 해제 가능)";
-      document.getElementById('adminStatusText').style.color = "#16a34a";
-      document.getElementById('adminToggleBtn').textContent = "인증 해제";
+    if (pw===ADMIN_PASSWORD) {
+      isAdmin=true;
+      document.getElementById('adminStatusText').textContent="🔓 체육교사 권한 (마감 명단 수정 및 잠금 해제 가능)";
+      document.getElementById('adminStatusText').style.color="#16a34a";
+      document.getElementById('adminToggleBtn').textContent="인증 해제";
       document.getElementById('adminToggleBtn').classList.add('logged-in');
-      document.getElementById('scoreNotice').innerHTML = "🟢 <strong>[체육교사 인증 완료]</strong> 점수 관리 및 각 학급 명단 마감 제어가 가능합니다.";
-      document.getElementById('scoreNotice').style.color = "#16a34a";
+      document.getElementById('scoreNotice').innerHTML="🟢 <strong>[체육교사 인증 완료]</strong> 점수 관리 및 각 학급 명단 마감 제어가 가능합니다.";
+      document.getElementById('scoreNotice').style.color="#16a34a";
     } else { alert("❌ 인증번호가 올바르지 않습니다."); return; }
   } else {
-    isAdmin = false;
-    document.getElementById('adminStatusText').textContent = "🔒 학생 권한 (마감된 명단 수정 불가능)";
-    document.getElementById('adminStatusText').style.color = "";
-    document.getElementById('adminToggleBtn').textContent = "체육교사 인증";
+    isAdmin=false;
+    document.getElementById('adminStatusText').textContent="🔒 학생 권한 (마감된 명단 수정 불가능)";
+    document.getElementById('adminStatusText').style.color="";
+    document.getElementById('adminToggleBtn').textContent="체육교사 인증";
     document.getElementById('adminToggleBtn').classList.remove('logged-in');
-    document.getElementById('scoreNotice').innerHTML = "🔒 <strong>[학생 열람 모드]</strong> 점수 입력은 체육교사 인증 후 가능합니다.";
-    document.getElementById('scoreNotice').style.color = "#475569";
+    document.getElementById('scoreNotice').innerHTML="🔒 <strong>[학생 열람 모드]</strong> 점수 입력은 체육교사 인증 후 가능합니다.";
+    document.getElementById('scoreNotice').style.color="#475569";
   }
   renderScoreTable(); renderRosterForm(); renderParentsForm();
 }
 
-// =====================================================
-// 점수 테이블
-// =====================================================
+// ── 점수 테이블
 function renderScoreTable() {
-  const tbody = document.getElementById('scoreTableBody');
-  tbody.innerHTML = '';
+  const tbody = document.getElementById('scoreTableBody'); tbody.innerHTML='';
   officialEvents.forEach(ev => {
-    const scores = matchScores[ev.name] || { blue: 0, white: 0 };
+    const scores = matchScores[ev.name]||{blue:0,white:0};
     const tr = document.createElement('tr');
-    if (ev.scoreRule === "200 / 150") tr.style.background = "#fff1f2";
-    const dis = isAdmin ? "" : "disabled";
-    tr.innerHTML = `
-      <td><strong>${ev.name}</strong></td>
-      <td><span style="font-size:12px;">${ev.scoreRule}</span></td>
-      <td><input type="number" class="score-input score-blue" data-event="${ev.name}" data-team="blue" value="${scores.blue}" oninput="updateLiveScore(this)" ${dis}></td>
-      <td><input type="number" class="score-input score-white" data-event="${ev.name}" data-team="white" value="${scores.white}" oninput="updateLiveScore(this)" ${dis}></td>
-    `;
+    if (ev.scoreRule==="200 / 150") tr.style.background="#fff1f2";
+    const dis = isAdmin?"":"disabled";
+    tr.innerHTML=`<td><strong>${ev.name}</strong></td><td><span style="font-size:12px;">${ev.scoreRule}</span></td><td><input type="number" class="score-input score-blue" data-event="${ev.name}" data-team="blue" value="${scores.blue}" oninput="updateLiveScore(this)" ${dis}></td><td><input type="number" class="score-input score-white" data-event="${ev.name}" data-team="white" value="${scores.white}" oninput="updateLiveScore(this)" ${dis}></td>`;
     tbody.appendChild(tr);
   });
   calculateTotalAndRefreshChart();
@@ -694,870 +533,501 @@ function renderScoreTable() {
 
 async function updateLiveScore(input) {
   if (!isAdmin) return;
-  const eventName = input.getAttribute('data-event');
-  const team = input.getAttribute('data-team');
-  const val = parseInt(input.value) || 0;
-  matchScores[eventName][team] = val;
-  calculateTotalAndRefreshChart();
+  const eventName=input.getAttribute('data-event'), team=input.getAttribute('data-team'), val=parseInt(input.value)||0;
+  matchScores[eventName][team]=val; calculateTotalAndRefreshChart();
   try {
-    const upsertData = { event_name: eventName, blue: matchScores[eventName].blue, white: matchScores[eventName].white };
-    await db.from('scores').upsert(upsertData, { onConflict: 'event_name' });
-    setSyncStatus('ok', '✅ 점수 실시간 저장됨');
-  } catch(e) {
-    setSyncStatus('error', '❌ 점수 저장 실패 (네트워크 확인)');
-    localStorage.setItem('barami_live_scores', JSON.stringify(matchScores));
-  }
+    await db.from('scores').upsert({event_name:eventName,blue:matchScores[eventName].blue,white:matchScores[eventName].white},{onConflict:'event_name'});
+    setSyncStatus('ok','✅ 점수 실시간 저장됨');
+  } catch(e) { setSyncStatus('error','❌ 점수 저장 실패'); localStorage.setItem('barami_live_scores',JSON.stringify(matchScores)); }
 }
 
 function calculateTotalAndRefreshChart() {
-  let b = 0, w = 0;
-  Object.values(matchScores).forEach(s => { b += s.blue; w += s.white; });
-  document.getElementById('blueTotalScore').textContent = b.toLocaleString();
-  document.getElementById('whiteTotalScore').textContent = w.toLocaleString();
-  if (scoreChartInstance) {
-    scoreChartInstance.data.datasets[0].data = [b, w];
-    scoreChartInstance.update();
-  }
+  let b=0,w=0; Object.values(matchScores).forEach(s=>{b+=s.blue;w+=s.white;});
+  document.getElementById('blueTotalScore').textContent=b.toLocaleString();
+  document.getElementById('whiteTotalScore').textContent=w.toLocaleString();
+  if (scoreChartInstance) { scoreChartInstance.data.datasets[0].data=[b,w]; scoreChartInstance.update(); }
 }
 
-// =====================================================
-// 아코디언
-// =====================================================
+// ── 아코디언
 function renderAccordion() {
-  const container = document.getElementById('events-accordion');
-  container.innerHTML = '';
-  officialEvents.forEach(ev => {
-    const item = document.createElement('div'); item.className = 'event-item';
-    item.innerHTML = `
-      <div class="event-header" onclick="toggleAccordion(this)"><span>🏅 ${ev.name}</span><span class="event-meta">상세 규정</span></div>
-      <div class="event-body">
-        <div class="event-item-block"><span class="info-label">🎯 경기 요약</span><span class="info-text">${ev.desc}</span></div>
-        <div class="event-item-block"><span class="info-label">👥 참가 요건</span><span class="info-text" style="color:var(--primary);font-weight:bold;">${ev.req}</span></div>
-      </div>
-    `;
+  const container=document.getElementById('events-accordion'); container.innerHTML='';
+  officialEvents.forEach(ev=>{
+    const item=document.createElement('div'); item.className='event-item';
+    item.innerHTML=`<div class="event-header" onclick="toggleAccordion(this)"><span>🏅 ${ev.name}</span><span class="event-meta">상세 규정</span></div><div class="event-body"><div><span class="info-label">🎯 경기 요약</span><span class="info-text">${ev.desc}</span></div><div style="margin-top:6px;"><span class="info-label">👥 참가 요건</span><span class="info-text" style="color:var(--primary);font-weight:bold;">${ev.req}</span></div></div>`;
     container.appendChild(item);
   });
 }
-
 function toggleAccordion(header) {
-  const body = header.nextElementSibling;
-  const isActive = header.classList.contains('active');
-  document.querySelectorAll('.event-header').forEach(h => h.classList.remove('active'));
-  document.querySelectorAll('.event-body').forEach(b => b.classList.remove('show'));
+  const body=header.nextElementSibling, isActive=header.classList.contains('active');
+  document.querySelectorAll('.event-header').forEach(h=>h.classList.remove('active'));
+  document.querySelectorAll('.event-body').forEach(b=>b.classList.remove('show'));
   if (!isActive) { header.classList.add('active'); body.classList.add('show'); }
 }
 
-// =====================================================
-// 명단 작성 폼
-// =====================================================
+// ── 명단 작성 폼 (원본과 동일)
 function renderRosterForm() {
-  const grade = document.getElementById('manageGrade').value;
-  const team  = document.getElementById('manageTeam').value;
-  const container = document.getElementById('rosterFormContainer');
-  const notice    = document.getElementById('rosterNotice');
-  container.innerHTML = '';
-
-  const lockKey = `${grade}_${team}`;
-  const isLocked = lockedRosters[lockKey] === true;
-
+  const grade=document.getElementById('manageGrade').value, team=document.getElementById('manageTeam').value;
+  const container=document.getElementById('rosterFormContainer'), notice=document.getElementById('rosterNotice');
+  container.innerHTML='';
+  const lockKey=`${grade}_${team}`, isLocked=lockedRosters[lockKey]===true;
   if (isLocked) {
-    if (isAdmin) {
-      notice.innerHTML = `🟢 <strong>[교사 관리 모드]</strong> 마감 상태입니다. 교사 권한으로 수정 가능합니다.<br><span style="color:#e11d48;font-weight:bold;">⚠️ 선택 종목 1인 2종목 이상 출전 금지</span>`;
-      notice.style.background = "#f0fdf4"; notice.style.color = "#16a34a";
-      document.getElementById('btnSaveRoster').disabled = false;
-      document.getElementById('btnSaveRoster').textContent = "💾 교사 권한으로 수정 저장";
-    } else {
-      notice.innerHTML = `🔒 <strong>[명단 마감 완료]</strong> 수정하려면 체육선생님께 요청하세요.<br><span style="color:#64748b;font-weight:bold;">⚠️ 선택 종목 1인 2종목 이상 출전 금지</span>`;
-      notice.style.background = "#f1f5f9"; notice.style.color = "#475569";
-      document.getElementById('btnSaveRoster').disabled = true;
-      document.getElementById('btnSaveRoster').textContent = "🔒 명단 마감됨 (수정 불가)";
-    }
-  } else {
-    notice.innerHTML = `🔓 명단 기입 후 <strong>'명단 저장'</strong>을 누르면 자동 마감됩니다.<br><span style="color:#e11d48;font-weight:bold;">⚠️ 선택 종목 1인 2종목 이상 출전 금지</span>`;
-    notice.style.background = "#eff6ff"; notice.style.color = "#1e40af";
-    document.getElementById('btnSaveRoster').disabled = false;
-    document.getElementById('btnSaveRoster').textContent = "💾 명단 저장 & 자동 마감";
-  }
-  document.getElementById('btnUnlockRoster').style.display = (isAdmin && isLocked) ? "inline-block" : "none";
-
-  if (!currentRoster[grade]) currentRoster[grade] = {};
-  if (!currentRoster[grade][team]) currentRoster[grade][team] = {};
-  const spec = classGenderSpecs[grade][team];
-
-  officialEvents.forEach(ev => {
-    const card = document.createElement('div'); card.className = 'roster-card';
-    if (ev.type === "all") {
-      card.innerHTML = `<h4>${ev.name} <span class="badge-req">공통</span></h4><div class="info-empty-card">학년 전원 참여 경기 — 개별 명단 불필요</div>`;
-      container.appendChild(card); return;
-    }
-
-    let activeSlots = [];
-    if (ev.name === "다산 한마음 계주") {
-      for (let i = 1; i <= spec.total; i++) activeSlots.push(`주자 ${i}번`);
-    } else {
-      activeSlots = [...ev.slots];
-    }
-
-    if (!currentRoster[grade][team][ev.name]) currentRoster[grade][team][ev.name] = {};
-    const gridClass = ev.layout === "2col" ? "input-grid-2col" : "input-grid-1col";
-    const inputDisabled = (isLocked && !isAdmin) ? "disabled" : "";
-
-    let remMale = spec.male, remFemale = spec.female, nextIsFemale = true;
-    let gridHTML = `<div class="${gridClass}">`;
-    activeSlots.forEach(slot => {
-      const value = currentRoster[grade][team][ev.name][slot] || "";
-      let phText = "이름 입력";
-      if (ev.name === "다산 한마음 계주") {
-        if (nextIsFemale) { phText = remFemale > 0 ? (remFemale--, "여학생 이름") : (remMale > 0 ? (remMale--, "남학생 이름") : "이름"); }
-        else              { phText = remMale   > 0 ? (remMale--,   "남학생 이름") : (remFemale > 0 ? (remFemale--, "여학생 이름") : "이름"); }
-        nextIsFemale = !nextIsFemale;
+    if (isAdmin) { notice.innerHTML=`🟢 <strong>[교사 관리 모드]</strong> 마감 상태입니다. 교사 권한으로 수정 가능합니다.<br><span style="color:#e11d48;font-weight:bold;">⚠️ 선택 종목 1인 2종목 이상 출전 금지</span>`; notice.style.background="#f0fdf4"; notice.style.color="#16a34a"; document.getElementById('btnSaveRoster').disabled=false; document.getElementById('btnSaveRoster').textContent="💾 교사 권한으로 수정 저장"; }
+    else { notice.innerHTML=`🔒 <strong>[명단 마감 완료]</strong> 수정하려면 체육선생님께 요청하세요.<br><span style="color:#64748b;font-weight:bold;">⚠️ 선택 종목 1인 2종목 이상 출전 금지</span>`; notice.style.background="#f1f5f9"; notice.style.color="#475569"; document.getElementById('btnSaveRoster').disabled=true; document.getElementById('btnSaveRoster').textContent="🔒 명단 마감됨 (수정 불가)"; }
+  } else { notice.innerHTML=`🔓 명단 기입 후 <strong>'명단 저장'</strong>을 누르면 자동 마감됩니다.<br><span style="color:#e11d48;font-weight:bold;">⚠️ 선택 종목 1인 2종목 이상 출전 금지</span>`; notice.style.background="#eff6ff"; notice.style.color="#1e40af"; document.getElementById('btnSaveRoster').disabled=false; document.getElementById('btnSaveRoster').textContent="💾 명단 저장 & 자동 마감"; }
+  document.getElementById('btnUnlockRoster').style.display=(isAdmin&&isLocked)?"inline-block":"none";
+  if (!currentRoster[grade]) currentRoster[grade]={};
+  if (!currentRoster[grade][team]) currentRoster[grade][team]={};
+  const spec=classGenderSpecs[grade][team];
+  officialEvents.forEach(ev=>{
+    const card=document.createElement('div'); card.className='roster-card';
+    if (ev.type==="all") { card.innerHTML=`<h4>${ev.name} <span class="badge-req">공통</span></h4><div class="info-empty-card">학년 전원 참여 경기 — 개별 명단 불필요</div>`; container.appendChild(card); return; }
+    let activeSlots=[];
+    if (ev.name==="다산 한마음 계주") { for(let i=1;i<=spec.total;i++) activeSlots.push(`주자 ${i}번`); } else { activeSlots=[...ev.slots]; }
+    if (!currentRoster[grade][team][ev.name]) currentRoster[grade][team][ev.name]={};
+    const gridClass=ev.layout==="2col"?"input-grid-2col":"input-grid-1col";
+    const inputDisabled=(isLocked&&!isAdmin)?"disabled":"";
+    let remMale=spec.male,remFemale=spec.female,nextIsFemale=true;
+    let gridHTML=`<div class="${gridClass}">`;
+    activeSlots.forEach(slot=>{
+      const value=currentRoster[grade][team][ev.name][slot]||"";
+      let phText="이름 입력";
+      if (ev.name==="다산 한마음 계주") {
+        if (nextIsFemale) { phText=remFemale>0?(remFemale--,"여학생 이름"):(remMale>0?(remMale--,"남학생 이름"):"이름"); }
+        else              { phText=remMale>0?(remMale--,"남학생 이름"):(remFemale>0?(remFemale--,"여학생 이름"):"이름"); }
+        nextIsFemale=!nextIsFemale;
       }
-      gridHTML += `<div class="input-row"><span>${slot}</span><input type="text" class="student-input" data-grade="${grade}" data-team="${team}" data-event="${ev.name}" data-slot="${slot}" value="${value}" placeholder="${phText}" ${inputDisabled}></div>`;
+      gridHTML+=`<div class="input-row"><span>${slot}</span><input type="text" class="student-input" data-grade="${grade}" data-team="${team}" data-event="${ev.name}" data-slot="${slot}" value="${value}" placeholder="${phText}" ${inputDisabled}></div>`;
     });
-    gridHTML += '</div>';
-
-    const limitBadge = ev.name !== "다산 한마음 계주" ? `<span class="badge-limit">⚠️ 1인 2종목 금지</span>` : '';
-    const badgeReq   = ev.name === "다산 한마음 계주" ? `총 ${spec.total}명 (남${spec.male}/여${spec.female})` : ev.req;
-    card.innerHTML = `<h4><span>${ev.name} <span class="badge-req">${badgeReq}</span></span>${limitBadge}</h4>${gridHTML}`;
+    gridHTML+='</div>';
+    const limitBadge=ev.name!=="다산 한마음 계주"?`<span class="badge-limit">⚠️ 1인 2종목 금지</span>`:'';
+    const badgeReq=ev.name==="다산 한마음 계주"?`총 ${spec.total}명 (남${spec.male}/여${spec.female})`:ev.req;
+    card.innerHTML=`<h4><span>${ev.name} <span class="badge-req">${badgeReq}</span></span>${limitBadge}</h4>${gridHTML}`;
     container.appendChild(card);
   });
 }
 
 async function saveRosterData() {
-  const grade = document.getElementById('manageGrade').value;
-  const team  = document.getElementById('manageTeam').value;
-  const lockKey = `${grade}_${team}`;
-
-  if (lockedRosters[lockKey] === true && !isAdmin) { alert("❌ 이 반은 이미 마감되어 수정할 수 없습니다."); return; }
-
-  setSyncStatus('syncing', '☁️ 명단 저장 중...');
-
-  document.querySelectorAll('.student-input').forEach(input => {
-    const g = input.getAttribute('data-grade'), t = input.getAttribute('data-team');
-    const ev = input.getAttribute('data-event'), sl = input.getAttribute('data-slot');
-    if (!currentRoster[g]) currentRoster[g] = {};
-    if (!currentRoster[g][t]) currentRoster[g][t] = {};
-    if (!currentRoster[g][t][ev]) currentRoster[g][t][ev] = {};
-    currentRoster[g][t][ev][sl] = input.value.trim();
+  const grade=document.getElementById('manageGrade').value, team=document.getElementById('manageTeam').value;
+  const lockKey=`${grade}_${team}`;
+  if (lockedRosters[lockKey]===true&&!isAdmin) { alert("❌ 이 반은 이미 마감되어 수정할 수 없습니다."); return; }
+  setSyncStatus('syncing','☁️ 명단 저장 중...');
+  document.querySelectorAll('.student-input').forEach(input=>{
+    const g=input.getAttribute('data-grade'),t=input.getAttribute('data-team'),ev=input.getAttribute('data-event'),sl=input.getAttribute('data-slot');
+    if (!currentRoster[g]) currentRoster[g]={};
+    if (!currentRoster[g][t]) currentRoster[g][t]={};
+    if (!currentRoster[g][t][ev]) currentRoster[g][t][ev]={};
+    currentRoster[g][t][ev][sl]=input.value.trim();
   });
-
   try {
-    await db.from('roster').delete().eq('grade', grade).eq('team', team);
-
-    const rows = [];
-    const teamData = currentRoster[grade]?.[team] || {};
-    for (const [eventName, slots] of Object.entries(teamData)) {
-      for (const [slot, studentName] of Object.entries(slots)) {
-        if (studentName) rows.push({ grade, team, event_name: eventName, slot, student_name: studentName });
+    await db.from('roster').delete().eq('grade',grade).eq('team',team);
+    const rows=[];
+    const teamData=currentRoster[grade]?.[team]||{};
+    for (const [eventName,slots] of Object.entries(teamData)) {
+      for (const [slot,studentName] of Object.entries(slots)) {
+        if (studentName) rows.push({grade,team,event_name:eventName,slot,student_name:studentName});
       }
     }
-    if (rows.length > 0) {
-      const { error } = await db.from('roster').insert(rows);
-      if (error) throw error;
-    }
-
-    if (!isAdmin) {
-      lockedRosters[lockKey] = true;
-      localStorage.setItem('barami_roster_locks', JSON.stringify(lockedRosters));
-      setSyncStatus('ok', '✅ 명단 저장 완료 — 서버에 반영됨');
-      alert('💾 명단이 서버에 저장되었습니다.\n지금부터 이 반은 자동 마감(잠금)됩니다.');
-    } else {
-      setSyncStatus('ok', '✅ 교사 권한으로 수정 저장 완료');
-      alert('💾 교사 권한으로 명단이 업데이트되었습니다.');
-    }
-    localStorage.setItem('barami_perfect_roster', JSON.stringify(currentRoster));
+    if (rows.length>0) { const {error}=await db.from('roster').insert(rows); if (error) throw error; }
+    if (!isAdmin) { lockedRosters[lockKey]=true; localStorage.setItem('barami_roster_locks',JSON.stringify(lockedRosters)); setSyncStatus('ok','✅ 명단 저장 완료'); alert('💾 명단이 서버에 저장되었습니다.\n지금부터 이 반은 자동 마감됩니다.'); }
+    else { setSyncStatus('ok','✅ 교사 권한으로 수정 저장 완료'); alert('💾 교사 권한으로 명단이 업데이트되었습니다.'); }
+    localStorage.setItem('barami_perfect_roster',JSON.stringify(currentRoster));
     renderRosterForm();
-  } catch(e) {
-    setSyncStatus('error', '❌ 저장 실패: ' + e.message);
-    alert('⚠️ 서버 저장 실패: ' + e.message + '\n로컬에는 임시 저장됩니다.');
-    localStorage.setItem('barami_perfect_roster', JSON.stringify(currentRoster));
-  }
+  } catch(e) { setSyncStatus('error','❌ 저장 실패: '+e.message); alert('⚠️ 서버 저장 실패: '+e.message); localStorage.setItem('barami_perfect_roster',JSON.stringify(currentRoster)); }
 }
 
 function unlockRosterByTeacher() {
   if (!isAdmin) return;
-  const grade = document.getElementById('manageGrade').value;
-  const team  = document.getElementById('manageTeam').value;
-  const lockKey = `${grade}_${team}`;
-  if (confirm(`🔓 ${grade} ${team} 마감을 해제하시겠습니까?`)) {
-    delete lockedRosters[lockKey];
-    localStorage.setItem('barami_roster_locks', JSON.stringify(lockedRosters));
-    alert('🔓 마감이 해제되었습니다.');
-    renderRosterForm();
-  }
+  const grade=document.getElementById('manageGrade').value, team=document.getElementById('manageTeam').value;
+  const lockKey=`${grade}_${team}`;
+  if (confirm(`🔓 ${grade} ${team} 마감을 해제하시겠습니까?`)) { delete lockedRosters[lockKey]; localStorage.setItem('barami_roster_locks',JSON.stringify(lockedRosters)); alert('🔓 마감이 해제되었습니다.'); renderRosterForm(); }
 }
 
-// =====================================================
-// 학부모 참석
-// =====================================================
+// ── 학부모 (원본과 동일)
 function renderParentsForm() {
-  const grade = document.getElementById('parentsGrade').value;
-  const team  = document.getElementById('parentsTeam').value;
-  const tbody = document.getElementById('parentsTableBody');
-  const notice = document.getElementById('parentsNotice');
-  const inputBox = document.getElementById('parentInputBox');
-  tbody.innerHTML = '';
-
-  const lockKey = `${grade}_${team}`;
-  const isLocked = lockedParents[lockKey] === true;
-
+  const grade=document.getElementById('parentsGrade').value, team=document.getElementById('parentsTeam').value;
+  const tbody=document.getElementById('parentsTableBody'), notice=document.getElementById('parentsNotice'), inputBox=document.getElementById('parentInputBox');
+  tbody.innerHTML='';
+  const lockKey=`${grade}_${team}`, isLocked=lockedParents[lockKey]===true;
   if (isLocked) {
-    if (isAdmin) {
-      notice.innerHTML = `🟢 <strong>[교사 관리 모드]</strong> 마감 상태. 교사 권한으로 삭제/해제 가능.`;
-      notice.style.background = "#f0fdf4"; notice.style.color = "#16a34a";
-      document.getElementById('btnSaveParents').disabled = false;
-      document.getElementById('btnSaveParents').textContent = "💾 교사 권한 확정 저장";
-      inputBox.style.display = "block";
-    } else {
-      notice.innerHTML = `🔒 <strong>[마감 완료]</strong> 추가/수정은 체육선생님께 요청하세요.`;
-      notice.style.background = "#f1f5f9"; notice.style.color = "#475569";
-      document.getElementById('btnSaveParents').disabled = true;
-      document.getElementById('btnSaveParents').textContent = "🔒 마감됨";
-      inputBox.style.display = "none";
-    }
-  } else {
-    notice.innerHTML = `🔓 정보를 입력하고 <strong>[➕ 명단 등록]</strong>을 누르면 아래에 누계로 추가됩니다. 최종 완료 후 <strong>'최종 제출'</strong>을 누르세요.`;
-    notice.style.background = "#fffbeb"; notice.style.color = "#b45309";
-    document.getElementById('btnSaveParents').disabled = false;
-    document.getElementById('btnSaveParents').textContent = "💾 최종 제출 & 마감";
-    inputBox.style.display = "block";
-  }
-  document.getElementById('btnUnlockParents').style.display = (isAdmin && isLocked) ? "inline-block" : "none";
-
-  const path = `${grade}_${team}`;
-  if (!parentsData[path]) parentsData[path] = [];
-  const list = parentsData[path];
-  document.getElementById('parentCountBadge').textContent = list.length;
-
-  if (list.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#94a3b8;padding:20px;">등록된 명단이 없습니다.</td></tr>`;
-    return;
-  }
-
-  const disabledAttr = (isLocked && !isAdmin) ? "disabled" : "";
-  list.forEach((item, idx) => {
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td><strong>${idx + 1}</strong></td>
-      <td>${item.relation}</td>
-      <td>${item.name}</td>
-      <td>${item.phone}</td>
-      <td><span style="background:${item.status==='참석'?'#dcfce7':'#f1f5f9'};color:${item.status==='참석'?'#16a34a':'#475569'};padding:2px 8px;border-radius:12px;font-size:12px;">${item.status}</span></td>
-      <td><button class="row-btn row-btn-del" onclick="deleteIndividualParent(${idx})" ${disabledAttr}>❌</button></td>
-    `;
+    if (isAdmin) { notice.innerHTML=`🟢 <strong>[교사 관리 모드]</strong> 마감 상태. 교사 권한으로 삭제/해제 가능.`; notice.style.background="#f0fdf4"; notice.style.color="#16a34a"; document.getElementById('btnSaveParents').disabled=false; document.getElementById('btnSaveParents').textContent="💾 교사 권한 확정 저장"; inputBox.style.display="block"; }
+    else { notice.innerHTML=`🔒 <strong>[마감 완료]</strong> 추가/수정은 체육선생님께 요청하세요.`; notice.style.background="#f1f5f9"; notice.style.color="#475569"; document.getElementById('btnSaveParents').disabled=true; document.getElementById('btnSaveParents').textContent="🔒 마감됨"; inputBox.style.display="none"; }
+  } else { notice.innerHTML=`🔓 정보를 입력하고 <strong>[➕ 명단 등록]</strong>을 누르면 아래에 누계로 추가됩니다. 최종 완료 후 <strong>'최종 제출'</strong>을 누르세요.`; notice.style.background="#fffbeb"; notice.style.color="#b45309"; document.getElementById('btnSaveParents').disabled=false; document.getElementById('btnSaveParents').textContent="💾 최종 제출 & 마감"; inputBox.style.display="block"; }
+  document.getElementById('btnUnlockParents').style.display=(isAdmin&&isLocked)?"inline-block":"none";
+  const path=`${grade}_${team}`;
+  if (!parentsData[path]) parentsData[path]=[];
+  const list=parentsData[path];
+  document.getElementById('parentCountBadge').textContent=list.length;
+  if (list.length===0) { tbody.innerHTML=`<tr><td colspan="6" style="text-align:center;color:#94a3b8;padding:20px;">등록된 명단이 없습니다.</td></tr>`; return; }
+  const disabledAttr=(isLocked&&!isAdmin)?"disabled":"";
+  list.forEach((item,idx)=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td><strong>${idx+1}</strong></td><td>${item.relation}</td><td>${item.name}</td><td>${item.phone}</td><td><span style="background:${item.status==='참석'?'#dcfce7':'#f1f5f9'};color:${item.status==='참석'?'#16a34a':'#475569'};padding:2px 8px;border-radius:12px;font-size:12px;">${item.status}</span></td><td><button class="row-btn row-btn-del" onclick="deleteIndividualParent(${idx})" ${disabledAttr}>❌</button></td>`;
     tbody.appendChild(tr);
   });
 }
 
 async function registerIndividualParent() {
-  const grade = document.getElementById('parentsGrade').value;
-  const team  = document.getElementById('parentsTeam').value;
-  const lockKey = `${grade}_${team}`;
-  if (lockedParents[lockKey] === true && !isAdmin) { alert("❌ 마감된 학급입니다."); return; }
-
-  const relation = document.getElementById('pRegRelation').value.trim();
-  const name     = document.getElementById('pRegName').value.trim();
-  const phone    = document.getElementById('pRegPhone').value.trim();
-  const status   = document.getElementById('pRegStatus').value;
-
-  if (!relation || !name || !phone) { alert("⚠️ 관계, 성함, 연락처를 모두 입력해주세요."); return; }
-
-  setSyncStatus('syncing', '☁️ 학부모 명단 등록 중...');
+  const grade=document.getElementById('parentsGrade').value, team=document.getElementById('parentsTeam').value;
+  const lockKey=`${grade}_${team}`;
+  if (lockedParents[lockKey]===true&&!isAdmin) { alert("❌ 마감된 학급입니다."); return; }
+  const relation=document.getElementById('pRegRelation').value.trim(), name=document.getElementById('pRegName').value.trim(), phone=document.getElementById('pRegPhone').value.trim(), status=document.getElementById('pRegStatus').value;
+  if (!relation||!name||!phone) { alert("⚠️ 관계, 성함, 연락처를 모두 입력해주세요."); return; }
+  setSyncStatus('syncing','☁️ 학부모 명단 등록 중...');
   try {
-    const { data, error } = await db.from('parents').insert([{ grade, team, relation, name, phone, status }]).select();
+    const {data,error}=await db.from('parents').insert([{grade,team,relation,name,phone,status}]).select();
     if (error) throw error;
-
-    const path = `${grade}_${team}`;
-    if (!parentsData[path]) parentsData[path] = [];
-    parentsData[path].push({ id: data[0].id, relation, name, phone, status });
-
-    document.getElementById('pRegRelation').value = '';
-    document.getElementById('pRegName').value = '';
-    document.getElementById('pRegPhone').value = '';
-    document.getElementById('pRegStatus').value = '참석';
-
-    setSyncStatus('ok', '✅ 학부모 명단 등록 완료');
-    alert(`➕ ${name} 학부모님이 서버에 정상 등록되었습니다.`);
-    renderParentsForm();
-  } catch(e) {
-    setSyncStatus('error', '❌ 등록 실패: ' + e.message);
-    alert('⚠️ 서버 오류: ' + e.message);
-  }
+    const path=`${grade}_${team}`;
+    if (!parentsData[path]) parentsData[path]=[];
+    parentsData[path].push({id:data[0].id,relation,name,phone,status});
+    document.getElementById('pRegRelation').value=''; document.getElementById('pRegName').value=''; document.getElementById('pRegPhone').value=''; document.getElementById('pRegStatus').value='참석';
+    setSyncStatus('ok','✅ 학부모 명단 등록 완료'); alert(`➕ ${name} 학부모님이 서버에 정상 등록되었습니다.`); renderParentsForm();
+  } catch(e) { setSyncStatus('error','❌ 등록 실패: '+e.message); alert('⚠️ 서버 오류: '+e.message); }
 }
 
 async function deleteIndividualParent(index) {
-  const grade = document.getElementById('parentsGrade').value;
-  const team  = document.getElementById('parentsTeam').value;
-  const lockKey = `${grade}_${team}`;
-  if (lockedParents[lockKey] === true && !isAdmin) { alert("❌ 마감 상태에서는 삭제할 수 없습니다."); return; }
-
+  const grade=document.getElementById('parentsGrade').value, team=document.getElementById('parentsTeam').value;
+  const lockKey=`${grade}_${team}`;
+  if (lockedParents[lockKey]===true&&!isAdmin) { alert("❌ 마감 상태에서는 삭제할 수 없습니다."); return; }
   if (!confirm("🗑️ 이 항목을 삭제하시겠습니까?")) return;
-
-  const path = `${grade}_${team}`;
-  const item = parentsData[path][index];
-  setSyncStatus('syncing', '☁️ 삭제 중...');
-  try {
-    if (item.id) {
-      const { error } = await db.from('parents').delete().eq('id', item.id);
-      if (error) throw error;
-    }
-    parentsData[path].splice(index, 1);
-    setSyncStatus('ok', '✅ 삭제 완료');
-    renderParentsForm();
-  } catch(e) {
-    setSyncStatus('error', '❌ 삭제 실패: ' + e.message);
-  }
+  const path=`${grade}_${team}`, item=parentsData[path][index];
+  setSyncStatus('syncing','☁️ 삭제 중...');
+  try { if (item.id) { const {error}=await db.from('parents').delete().eq('id',item.id); if (error) throw error; } parentsData[path].splice(index,1); setSyncStatus('ok','✅ 삭제 완료'); renderParentsForm(); }
+  catch(e) { setSyncStatus('error','❌ 삭제 실패: '+e.message); }
 }
 
 async function saveParentsData() {
-  const grade = document.getElementById('parentsGrade').value;
-  const team  = document.getElementById('parentsTeam').value;
-  const lockKey = `${grade}_${team}`;
-  if (lockedParents[lockKey] === true && !isAdmin) { alert("❌ 이미 마감 완료되었습니다."); return; }
-
-  if (!isAdmin) {
-    lockedParents[lockKey] = true;
-    localStorage.setItem('barami_parents_locks', JSON.stringify(lockedParents));
-    setSyncStatus('ok', '✅ 학부모 명단 최종 마감 완료');
-    alert('💾 학부모 참석 명단이 최종 확정되었습니다.\n이 반은 자동 마감됩니다.');
-  } else {
-    setSyncStatus('ok', '✅ 교사 권한 확정 저장 완료');
-    alert('💾 교사 권한으로 저장되었습니다.');
-  }
+  const grade=document.getElementById('parentsGrade').value, team=document.getElementById('parentsTeam').value;
+  const lockKey=`${grade}_${team}`;
+  if (lockedParents[lockKey]===true&&!isAdmin) { alert("❌ 이미 마감 완료되었습니다."); return; }
+  if (!isAdmin) { lockedParents[lockKey]=true; localStorage.setItem('barami_parents_locks',JSON.stringify(lockedParents)); setSyncStatus('ok','✅ 학부모 명단 최종 마감 완료'); alert('💾 학부모 참석 명단이 최종 확정되었습니다.'); }
+  else { setSyncStatus('ok','✅ 교사 권한 확정 저장 완료'); alert('💾 교사 권한으로 저장되었습니다.'); }
   renderParentsForm();
 }
 
 function unlockParentsByTeacher() {
   if (!isAdmin) return;
-  const grade = document.getElementById('parentsGrade').value;
-  const team  = document.getElementById('parentsTeam').value;
-  const lockKey = `${grade}_${team}`;
-  if (confirm(`🔓 ${grade} ${team} 학부모 명단 마감을 해제하시겠습니까?`)) {
-    delete lockedParents[lockKey];
-    localStorage.setItem('barami_parents_locks', JSON.stringify(lockedParents));
-    alert('🔓 마감이 해제되었습니다.');
-    renderParentsForm();
-  }
+  const grade=document.getElementById('parentsGrade').value, team=document.getElementById('parentsTeam').value;
+  const lockKey=`${grade}_${team}`;
+  if (confirm(`🔓 ${grade} ${team} 학부모 명단 마감을 해제하시겠습니까?`)) { delete lockedParents[lockKey]; localStorage.setItem('barami_parents_locks',JSON.stringify(lockedParents)); alert('🔓 마감이 해제되었습니다.'); renderParentsForm(); }
 }
 
-// =====================================================
-// 통합 검색
-// =====================================================
+// ── 통합 검색
 function searchStudent() {
-  const q = document.getElementById('searchInput').value.trim();
-  const resultDiv = document.getElementById('searchResult');
+  const q=document.getElementById('searchInput').value.trim(), resultDiv=document.getElementById('searchResult');
   if (!q) { alert('이름을 입력하세요.'); return; }
-  let hitList = [];
-  for (const [grade, teams] of Object.entries(currentRoster)) {
-    for (const [team, events] of Object.entries(teams)) {
-      for (const [eventName, slots] of Object.entries(events)) {
-        for (const [slotName, sName] of Object.entries(slots)) {
-          if (sName === q) hitList.push({ grade, team, eventName, slotName });
-        }
-      }
-    }
-  }
-  if (hitList.length > 0) {
-    let html = `🎯 <strong>${q}</strong> 님의 출전 포지션:<br>`;
-    hitList.forEach(item => { html += `• ${item.grade} (${item.team}) ➔ ${item.eventName} [${item.slotName}]<br>`; });
-    resultDiv.innerHTML = html;
-  } else {
-    resultDiv.innerHTML = `🔎 <strong>"${q}"</strong> 학생의 배치를 찾을 수 없습니다. (공통 종목 제외)`;
-  }
-  resultDiv.className = "search-result show";
+  let hitList=[];
+  for (const [grade,teams] of Object.entries(currentRoster)) for (const [team,events] of Object.entries(teams)) for (const [eventName,slots] of Object.entries(events)) for (const [slotName,sName] of Object.entries(slots)) if (sName===q) hitList.push({grade,team,eventName,slotName});
+  if (hitList.length>0) { let html=`🎯 <strong>${q}</strong> 님의 출전 포지션:<br>`; hitList.forEach(item=>{html+=`• ${item.grade} (${item.team}) ➔ ${item.eventName} [${item.slotName}]<br>`;}); resultDiv.innerHTML=html; }
+  else { resultDiv.innerHTML=`🔎 <strong>"${q}"</strong> 학생의 배치를 찾을 수 없습니다.`; }
+  resultDiv.className="search-result show";
 }
 
-// =====================================================
-// CSV 내보내기
-// =====================================================
+// ── CSV
 function exportRosterToCSV() {
-  let csv = "\uFEFF학년,팀,종목명,역할,선수명\n";
-  for (const [grade, teams] of Object.entries(currentRoster)) {
-    for (const [team, events] of Object.entries(teams)) {
-      for (const [eventName, slots] of Object.entries(events)) {
-        for (const [slotName, sName] of Object.entries(slots)) {
-          if (sName) csv += `"${grade}","${team}","${eventName}","${slotName}","${sName}"\n`;
-        }
-      }
-    }
-  }
-  downloadCSV(csv, '바래미체육대회_마스터명단.csv');
+  let csv="\uFEFF학년,팀,종목명,역할,선수명\n";
+  for (const [grade,teams] of Object.entries(currentRoster)) for (const [team,events] of Object.entries(teams)) for (const [eventName,slots] of Object.entries(events)) for (const [slotName,sName] of Object.entries(slots)) if (sName) csv+=`"${grade}","${team}","${eventName}","${slotName}","${sName}"\n`;
+  downloadCSV(csv,'바래미체육대회_마스터명단.csv');
 }
-
 function exportParentsToCSV() {
-  let csv = "\uFEFF순번,학년,팀,관계,성함,연락처,참석여부\n";
-  let idx = 1;
-  for (const [path, list] of Object.entries(parentsData)) {
-    const [grade, team] = path.split('_');
-    list.forEach(item => {
-      csv += `"${idx++}","${grade}","${team}","${item.relation}","${item.name}","${item.phone}","${item.status}"\n`;
-    });
-  }
-  downloadCSV(csv, '바래미체육대회_학부모명단.csv');
+  let csv="\uFEFF순번,학년,팀,관계,성함,연락처,참석여부\n"; let idx=1;
+  for (const [path,list] of Object.entries(parentsData)) { const [grade,team]=path.split('_'); list.forEach(item=>{csv+=`"${idx++}","${grade}","${team}","${item.relation}","${item.name}","${item.phone}","${item.status}"\n`;}); }
+  downloadCSV(csv,'바래미체육대회_학부모명단.csv');
 }
+function downloadCSV(csv,filename) { const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'}); const link=document.createElement("a"); link.href=URL.createObjectURL(blob); link.setAttribute("download",filename); document.body.appendChild(link); link.click(); document.body.removeChild(link); }
 
-function downloadCSV(csv, filename) {
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-  const link = document.createElement("a");
-  link.href = URL.createObjectURL(blob);
-  link.setAttribute("download", filename);
-  document.body.appendChild(link); link.click(); document.body.removeChild(link);
-}
-
-// =====================================================
-// 탭 전환
-// =====================================================
+// ── 탭 전환
 function switchTab(e, tabId) {
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-  const btn = e.target.tagName === 'SPAN' ? e.target.parentElement : e.target;
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
+  const btn=e.target.tagName==='SPAN'?e.target.parentElement:e.target;
   btn.classList.add('active');
   document.getElementById(tabId).classList.add('active');
 }
 
-// =====================================================
-// ★ 청백 통합 명단 탭 로직 ★
-// =====================================================
-
-// 종목 필터 드롭다운 채우기
+// ── 청백명단 (원본과 동일)
 function populateArEventFilter() {
-  const sel = document.getElementById('arEvent');
-  sel.innerHTML = '<option value="all">전체 종목</option>';
-  officialEvents.filter(ev => ev.type === 'roster').forEach(ev => {
-    const opt = document.createElement('option');
-    opt.value = ev.name;
-    opt.textContent = ev.name;
-    sel.appendChild(opt);
-  });
+  const sel=document.getElementById('arEvent'); sel.innerHTML='<option value="all">전체 종목</option>';
+  officialEvents.filter(ev=>ev.type==='roster').forEach(ev=>{ const opt=document.createElement('option'); opt.value=ev.name; opt.textContent=ev.name; sel.appendChild(opt); });
 }
-
-// 탭 클릭 시 서버에서 최신 데이터 로드
 async function loadAllRosterView() {
-  const content = document.getElementById('allRosterContent');
-  content.innerHTML = '<div class="loading-spinner"><span class="spinner"></span> 최신 명단 불러오는 중...</div>';
+  const content=document.getElementById('allRosterContent');
+  content.innerHTML='<div class="loading-spinner"><span class="spinner"></span> 최신 명단 불러오는 중...</div>';
   try {
-    const { data: rosterRows, error } = await db.from('roster').select('*');
-    if (error) throw error;
-    currentRoster = {};
-    (rosterRows || []).forEach(row => {
-      if (!currentRoster[row.grade]) currentRoster[row.grade] = {};
-      if (!currentRoster[row.grade][row.team]) currentRoster[row.grade][row.team] = {};
-      if (!currentRoster[row.grade][row.team][row.event_name]) currentRoster[row.grade][row.team][row.event_name] = {};
-      currentRoster[row.grade][row.team][row.event_name][row.slot] = row.student_name || '';
-    });
-    setSyncStatus('ok', '✅ 청백 명단 최신 동기화 완료');
-  } catch(e) {
-    setSyncStatus('error', '❌ 로드 실패 — 로컬 데이터 사용');
-  }
+    const {data:rosterRows,error}=await db.from('roster').select('*'); if (error) throw error;
+    currentRoster={};
+    (rosterRows||[]).forEach(row=>{ if (!currentRoster[row.grade]) currentRoster[row.grade]={}; if (!currentRoster[row.grade][row.team]) currentRoster[row.grade][row.team]={}; if (!currentRoster[row.grade][row.team][row.event_name]) currentRoster[row.grade][row.team][row.event_name]={}; currentRoster[row.grade][row.team][row.event_name][row.slot]=row.student_name||''; });
+    setSyncStatus('ok','✅ 청백 명단 최신 동기화 완료');
+  } catch(e) { setSyncStatus('error','❌ 로드 실패 — 로컬 데이터 사용'); }
   renderAllRoster();
 }
-
-// 뷰 모드 설정
-function setArView(mode) {
-  arViewMode = mode;
-  document.getElementById('vbtnEvent').classList.toggle('active', mode === 'event');
-  document.getElementById('vbtnGrade').classList.toggle('active', mode === 'grade');
-  document.getElementById('vbtnTable').classList.toggle('active', mode === 'table');
-  renderAllRoster();
-}
-
-// 메인 렌더 함수 — 뷰 모드에 따라 분기
+function setArView(mode) { arViewMode=mode; document.getElementById('vbtnEvent').classList.toggle('active',mode==='event'); document.getElementById('vbtnGrade').classList.toggle('active',mode==='grade'); document.getElementById('vbtnTable').classList.toggle('active',mode==='table'); renderAllRoster(); }
 function renderAllRoster() {
-  const filterGrade = document.getElementById('arGrade').value;
-  const filterEvent = document.getElementById('arEvent').value;
-
-  // 통계 계산
-  let totalCount = 0, blueCount = 0, whiteCount = 0;
-  const grades = ['1학년', '2학년', '3학년'];
-  grades.forEach(g => {
-    ['청팀(1반팀)', '백팀(2반팀)'].forEach(t => {
-      const events = currentRoster[g]?.[t] || {};
-      Object.values(events).forEach(slots => {
-        Object.values(slots).forEach(name => {
-          if (name) {
-            totalCount++;
-            if (t === '청팀(1반팀)') blueCount++;
-            else whiteCount++;
-          }
-        });
-      });
-    });
-  });
-  document.getElementById('arStatTotal').textContent = totalCount;
-  document.getElementById('arStatBlue').textContent  = blueCount;
-  document.getElementById('arStatWhite').textContent = whiteCount;
-
-  const content = document.getElementById('allRosterContent');
-  content.innerHTML = '';
-
-  if (arViewMode === 'event') {
-    renderArByEvent(content, filterGrade, filterEvent);
-  } else if (arViewMode === 'grade') {
-    renderArByGrade(content, filterGrade, filterEvent);
-  } else {
-    renderArTable(content, filterGrade, filterEvent);
-  }
+  const filterGrade=document.getElementById('arGrade').value, filterEvent=document.getElementById('arEvent').value;
+  let totalCount=0,blueCount=0,whiteCount=0;
+  ['1학년','2학년','3학년'].forEach(g=>{ ['청팀(1반팀)','백팀(2반팀)'].forEach(t=>{ const events=currentRoster[g]?.[t]||{}; Object.values(events).forEach(slots=>{ Object.values(slots).forEach(name=>{ if(name){totalCount++;if(t==='청팀(1반팀)')blueCount++;else whiteCount++;}}); }); }); });
+  document.getElementById('arStatTotal').textContent=totalCount; document.getElementById('arStatBlue').textContent=blueCount; document.getElementById('arStatWhite').textContent=whiteCount;
+  const content=document.getElementById('allRosterContent'); content.innerHTML='';
+  if (arViewMode==='event') renderArByEvent(content,filterGrade,filterEvent);
+  else if (arViewMode==='grade') renderArByGrade(content,filterGrade,filterEvent);
+  else renderArTable(content,filterGrade,filterEvent);
 }
-
-// ── 뷰1: 종목별 ──
-function renderArByEvent(container, filterGrade, filterEvent) {
-  const grades = filterGrade === 'all' ? ['1학년', '2학년', '3학년'] : [filterGrade];
-  const rosterEvents = officialEvents.filter(ev =>
-    ev.type === 'roster' && (filterEvent === 'all' || ev.name === filterEvent)
-  );
-
-  if (rosterEvents.length === 0) {
-    container.innerHTML = '<div class="info-empty-card">조회할 종목이 없습니다.</div>';
-    return;
-  }
-
-  rosterEvents.forEach(ev => {
-    const block = document.createElement('div');
-    block.className = 'event-roster-block';
-
-    const titleEl = document.createElement('div');
-    titleEl.className = 'event-roster-title';
-    titleEl.innerHTML = `<span>🏅 ${ev.name}</span><span style="font-size:11px;color:var(--text-muted);">${ev.req}</span>`;
-    block.appendChild(titleEl);
-
-    grades.forEach(grade => {
-      // 학년 구분 라벨 (전체 학년일 때만)
-      if (filterGrade === 'all') {
-        const gradeLabel = document.createElement('div');
-        gradeLabel.style.cssText = 'padding:6px 14px;background:#f1f5f9;font-size:12px;font-weight:700;color:#1e40af;border-top:1px solid #e2e8f0;';
-        gradeLabel.textContent = `📚 ${grade}`;
-        block.appendChild(gradeLabel);
-      }
-
-      const body = document.createElement('div');
-      body.className = 'event-roster-body';
-
-      ['청팀(1반팀)', '백팀(2반팀)'].forEach((team, ti) => {
-        const teamDiv = document.createElement('div');
-        teamDiv.className = 'event-roster-team';
-
-        const label = document.createElement('div');
-        label.className = `event-roster-team-label ${ti === 0 ? 'blue' : 'white'}`;
-        label.textContent = ti === 0 ? '🔵 청팀 (1반팀)' : '⚪ 백팀 (2반팀)';
-        teamDiv.appendChild(label);
-
-        const nameList = document.createElement('div');
-        nameList.className = 'roster-name-list';
-
-        // 다산 한마음 계주: 슬롯 동적 생성
-        let slots = ev.slots || [];
-        if (ev.name === '다산 한마음 계주') {
-          const spec = classGenderSpecs[grade]?.[team];
-          slots = spec ? Array.from({length: spec.total}, (_, i) => `주자 ${i+1}번`) : [];
-        }
-
-        const eventData = currentRoster[grade]?.[team]?.[ev.name] || {};
-        let hasAny = false;
-
-        slots.forEach(slot => {
-          const name = eventData[slot] || '';
-          const chip = document.createElement('span');
-          if (name) {
-            chip.className = 'roster-name-chip';
-            chip.innerHTML = `${name}<span class="slot-label">${slot}</span>`;
-            hasAny = true;
-          } else {
-            chip.className = 'roster-name-chip empty';
-            chip.textContent = slot;
-          }
-          nameList.appendChild(chip);
-        });
-
-        if (!hasAny && slots.length === 0) {
-          nameList.innerHTML = '<span class="roster-name-chip empty">미입력</span>';
-        }
-
-        teamDiv.appendChild(nameList);
-        body.appendChild(teamDiv);
+function renderArByEvent(container,filterGrade,filterEvent) {
+  const grades=filterGrade==='all'?['1학년','2학년','3학년']:[filterGrade];
+  const rosterEvents=officialEvents.filter(ev=>ev.type==='roster'&&(filterEvent==='all'||ev.name===filterEvent));
+  if (!rosterEvents.length) { container.innerHTML='<div style="text-align:center;padding:20px;color:#94a3b8;">조회할 종목이 없습니다.</div>'; return; }
+  rosterEvents.forEach(ev=>{
+    const block=document.createElement('div'); block.className='event-roster-block';
+    const titleEl=document.createElement('div'); titleEl.className='event-roster-title'; titleEl.innerHTML=`<span>🏅 ${ev.name}</span><span style="font-size:11px;color:var(--text-muted);">${ev.req}</span>`; block.appendChild(titleEl);
+    grades.forEach(grade=>{
+      if (filterGrade==='all') { const gl=document.createElement('div'); gl.style.cssText='padding:6px 14px;background:#f1f5f9;font-size:12px;font-weight:700;color:#1e40af;border-top:1px solid #e2e8f0;'; gl.textContent=`📚 ${grade}`; block.appendChild(gl); }
+      const body=document.createElement('div'); body.className='event-roster-body';
+      ['청팀(1반팀)','백팀(2반팀)'].forEach((team,ti)=>{
+        const teamDiv=document.createElement('div'); teamDiv.className='event-roster-team';
+        const label=document.createElement('div'); label.className=`event-roster-team-label ${ti===0?'blue':'white'}`; label.textContent=ti===0?'🔵 청팀 (1반팀)':'⚪ 백팀 (2반팀)'; teamDiv.appendChild(label);
+        const nameList=document.createElement('div'); nameList.className='roster-name-list';
+        let slots=ev.slots||[];
+        if (ev.name==='다산 한마음 계주') { const spec=classGenderSpecs[grade]?.[team]; slots=spec?Array.from({length:spec.total},(_,i)=>`주자 ${i+1}번`):[];}
+        const eventData=currentRoster[grade]?.[team]?.[ev.name]||{};
+        let hasAny=false;
+        slots.forEach(slot=>{ const name=eventData[slot]||''; const chip=document.createElement('span'); if(name){chip.className='roster-name-chip';chip.innerHTML=`${name}<span class="slot-label">${slot}</span>`;hasAny=true;}else{chip.className='roster-name-chip empty';chip.textContent=slot;} nameList.appendChild(chip); });
+        if (!hasAny&&slots.length===0) nameList.innerHTML='<span class="roster-name-chip empty">미입력</span>';
+        teamDiv.appendChild(nameList); body.appendChild(teamDiv);
       });
-
       block.appendChild(body);
     });
-
     container.appendChild(block);
   });
-
-  // 공통 종목 안내
-  if (filterEvent === 'all') {
-    const allEventsBlock = document.createElement('div');
-    allEventsBlock.style.cssText = 'background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:14px;margin-top:4px;';
-    allEventsBlock.innerHTML = `
-      <div style="font-weight:700;color:#16a34a;margin-bottom:8px;">✅ 학년 전원 참여 종목 (개별 명단 없음)</div>
-      <div style="display:flex;flex-wrap:wrap;gap:8px;">
-        ${officialEvents.filter(ev => ev.type === 'all').map(ev =>
-          `<span style="background:white;border:1px solid #bbf7d0;padding:4px 12px;border-radius:20px;font-size:13px;font-weight:600;color:#15803d;">${ev.name}</span>`
-        ).join('')}
-      </div>
-    `;
-    container.appendChild(allEventsBlock);
+  if (filterEvent==='all') {
+    const allBlock=document.createElement('div'); allBlock.style.cssText='background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:14px;margin-top:4px;';
+    allBlock.innerHTML=`<div style="font-weight:700;color:#16a34a;margin-bottom:8px;">✅ 학년 전원 참여 종목 (개별 명단 없음)</div><div style="display:flex;flex-wrap:wrap;gap:8px;">${officialEvents.filter(ev=>ev.type==='all').map(ev=>`<span style="background:white;border:1px solid #bbf7d0;padding:4px 12px;border-radius:20px;font-size:13px;font-weight:600;color:#15803d;">${ev.name}</span>`).join('')}</div>`;
+    container.appendChild(allBlock);
   }
 }
-
-// ── 뷰2: 학년별 ──
-function renderArByGrade(container, filterGrade, filterEvent) {
-  const grades = filterGrade === 'all' ? ['1학년', '2학년', '3학년'] : [filterGrade];
-
-  grades.forEach(grade => {
-    const gradeHeader = document.createElement('div');
-    gradeHeader.className = 'grade-section-header';
-    gradeHeader.innerHTML = `<span>📚 ${grade}</span><span class="sub">청팀 vs 백팀 출전 선수</span>`;
-    container.appendChild(gradeHeader);
-
-    const cols = document.createElement('div');
-    cols.className = 'team-columns';
-
-    ['청팀(1반팀)', '백팀(2반팀)'].forEach((team, ti) => {
-      const col = document.createElement('div');
-      col.className = ti === 0 ? 'team-column-blue' : 'team-column-white';
-
-      const header = document.createElement('div');
-      header.className = `team-col-header ${ti === 0 ? 'blue' : 'white'}`;
-      header.textContent = ti === 0 ? '🔵 청팀 (1반팀)' : '⚪ 백팀 (2반팀)';
-      col.appendChild(header);
-
-      const body = document.createElement('div');
-      body.style.padding = '12px';
-
-      const rosterEvents = officialEvents.filter(ev =>
-        ev.type === 'roster' && (filterEvent === 'all' || ev.name === filterEvent)
-      );
-
-      rosterEvents.forEach(ev => {
-        const sec = document.createElement('div');
-        sec.className = 'roster-view-section';
-
-        const title = document.createElement('div');
-        title.className = 'roster-view-section-title';
-        title.textContent = ev.name;
-        sec.appendChild(title);
-
-        const nameList = document.createElement('div');
-        nameList.className = 'roster-name-list';
-
-        let slots = ev.slots || [];
-        if (ev.name === '다산 한마음 계주') {
-          const spec = classGenderSpecs[grade]?.[team];
-          slots = spec ? Array.from({length: spec.total}, (_, i) => `주자 ${i+1}번`) : [];
-        }
-
-        const eventData = currentRoster[grade]?.[team]?.[ev.name] || {};
-        slots.forEach(slot => {
-          const name = eventData[slot] || '';
-          const chip = document.createElement('span');
-          if (name) {
-            chip.className = 'roster-name-chip';
-            chip.innerHTML = `${name}<span class="slot-label">${slot}</span>`;
-          } else {
-            chip.className = 'roster-name-chip empty';
-            chip.textContent = '미입력';
-          }
-          nameList.appendChild(chip);
-        });
-
-        sec.appendChild(nameList);
-        body.appendChild(sec);
+function renderArByGrade(container,filterGrade,filterEvent) {
+  const grades=filterGrade==='all'?['1학년','2학년','3학년']:[filterGrade];
+  grades.forEach(grade=>{
+    const gh=document.createElement('div'); gh.className='grade-section-header'; gh.innerHTML=`<span>📚 ${grade}</span><span class="sub">청팀 vs 백팀 출전 선수</span>`; container.appendChild(gh);
+    const cols=document.createElement('div'); cols.className='team-columns';
+    ['청팀(1반팀)','백팀(2반팀)'].forEach((team,ti)=>{
+      const col=document.createElement('div'); col.className=ti===0?'team-column-blue':'team-column-white';
+      const header=document.createElement('div'); header.className=`team-col-header ${ti===0?'blue':'white'}`; header.textContent=ti===0?'🔵 청팀 (1반팀)':'⚪ 백팀 (2반팀)'; col.appendChild(header);
+      const body=document.createElement('div'); body.style.padding='12px';
+      officialEvents.filter(ev=>ev.type==='roster'&&(filterEvent==='all'||ev.name===filterEvent)).forEach(ev=>{
+        const sec=document.createElement('div'); sec.className='roster-view-section';
+        const title=document.createElement('div'); title.className='roster-view-section-title'; title.textContent=ev.name; sec.appendChild(title);
+        const nameList=document.createElement('div'); nameList.className='roster-name-list';
+        let slots=ev.slots||[];
+        if (ev.name==='다산 한마음 계주') { const spec=classGenderSpecs[grade]?.[team]; slots=spec?Array.from({length:spec.total},(_,i)=>`주자 ${i+1}번`):[];}
+        const eventData=currentRoster[grade]?.[team]?.[ev.name]||{};
+        slots.forEach(slot=>{ const name=eventData[slot]||''; const chip=document.createElement('span'); if(name){chip.className='roster-name-chip';chip.innerHTML=`${name}<span class="slot-label">${slot}</span>`;}else{chip.className='roster-name-chip empty';chip.textContent='미입력';} nameList.appendChild(chip); });
+        sec.appendChild(nameList); body.appendChild(sec);
       });
-
-      col.appendChild(body);
-      cols.appendChild(col);
+      col.appendChild(body); cols.appendChild(col);
     });
-
     container.appendChild(cols);
   });
 }
-
-// ── 뷰3: 표 형식 ──
-function renderArTable(container, filterGrade, filterEvent) {
-  const wrapper = document.createElement('div');
-  wrapper.className = 'roster-table-view table-wrapper';
-
-  const table = document.createElement('table');
-  table.innerHTML = `
-    <thead>
-      <tr>
-        <th>학년</th>
-        <th>종목</th>
-        <th>역할(슬롯)</th>
-        <th><span class="chip-blue">🔵 청팀</span></th>
-        <th><span class="chip-white">⚪ 백팀</span></th>
-      </tr>
-    </thead>
-  `;
-  const tbody = document.createElement('tbody');
-
-  const grades = filterGrade === 'all' ? ['1학년', '2학년', '3학년'] : [filterGrade];
-  const rosterEvents = officialEvents.filter(ev =>
-    ev.type === 'roster' && (filterEvent === 'all' || ev.name === filterEvent)
-  );
-
-  let rowCount = 0;
-  grades.forEach(grade => {
-    rosterEvents.forEach(ev => {
-      let slots = ev.slots || [];
-      if (ev.name === '다산 한마음 계주') {
-        // 표 뷰에서는 다산 계주를 요약으로
-        const blueSpec = classGenderSpecs[grade]?.['청팀(1반팀)'];
-        const whiteSpec = classGenderSpecs[grade]?.['백팀(2반팀)'];
-        const blueData = currentRoster[grade]?.['청팀(1반팀)']?.[ev.name] || {};
-        const whiteData = currentRoster[grade]?.['백팀(2반팀)']?.[ev.name] || {};
-        const blueNames = Object.values(blueData).filter(Boolean);
-        const whiteNames = Object.values(whiteData).filter(Boolean);
-
-        const tr = document.createElement('tr');
-        if (rowCount % 2 === 0) tr.style.background = '#fafafa';
-        tr.innerHTML = `
-          <td><strong>${grade}</strong></td>
-          <td>${ev.name}</td>
-          <td style="color:var(--text-muted);font-size:11px;">전원 (${blueSpec?.total || '?'}명)</td>
-          <td>${blueNames.length > 0 ? `<span class="chip-blue">${blueNames.length}명 등록</span>` : '<span style="color:#94a3b8;font-size:12px;">미입력</span>'}</td>
-          <td>${whiteNames.length > 0 ? `<span class="chip-white">${whiteNames.length}명 등록</span>` : '<span style="color:#94a3b8;font-size:12px;">미입력</span>'}</td>
-        `;
-        tbody.appendChild(tr);
-        rowCount++;
-        return;
+function renderArTable(container,filterGrade,filterEvent) {
+  const wrapper=document.createElement('div'); wrapper.className='roster-table-view table-wrapper';
+  const table=document.createElement('table'); table.innerHTML=`<thead><tr><th>학년</th><th>종목</th><th>역할(슬롯)</th><th><span class="chip-blue">🔵 청팀</span></th><th><span class="chip-white">⚪ 백팀</span></th></tr></thead>`;
+  const tbody=document.createElement('tbody');
+  const grades=filterGrade==='all'?['1학년','2학년','3학년']:[filterGrade];
+  const rosterEvents=officialEvents.filter(ev=>ev.type==='roster'&&(filterEvent==='all'||ev.name===filterEvent));
+  let rowCount=0;
+  grades.forEach(grade=>{
+    rosterEvents.forEach(ev=>{
+      let slots=ev.slots||[];
+      if (ev.name==='다산 한마음 계주') {
+        const blueSpec=classGenderSpecs[grade]?.['청팀(1반팀)'], whiteSpec=classGenderSpecs[grade]?.['백팀(2반팀)'];
+        const blueData=currentRoster[grade]?.['청팀(1반팀)']?.[ev.name]||{}, whiteData=currentRoster[grade]?.['백팀(2반팀)']?.[ev.name]||{};
+        const blueNames=Object.values(blueData).filter(Boolean), whiteNames=Object.values(whiteData).filter(Boolean);
+        const tr=document.createElement('tr'); if(rowCount%2===0)tr.style.background='#fafafa';
+        tr.innerHTML=`<td><strong>${grade}</strong></td><td>${ev.name}</td><td style="color:var(--text-muted);font-size:11px;">전원 (${blueSpec?.total||'?'}명)</td><td>${blueNames.length>0?`<span class="chip-blue">${blueNames.length}명 등록</span>`:'<span style="color:#94a3b8;font-size:12px;">미입력</span>'}</td><td>${whiteNames.length>0?`<span class="chip-white">${whiteNames.length}명 등록</span>`:'<span style="color:#94a3b8;font-size:12px;">미입력</span>'}</td>`;
+        tbody.appendChild(tr); rowCount++; return;
       }
-
-      slots.forEach(slot => {
-        const blueName  = currentRoster[grade]?.['청팀(1반팀)']?.[ev.name]?.[slot] || '';
-        const whiteName = currentRoster[grade]?.['백팀(2반팀)']?.[ev.name]?.[slot] || '';
-
-        const tr = document.createElement('tr');
-        if (rowCount % 2 === 0) tr.style.background = '#fafafa';
-        tr.innerHTML = `
-          <td><strong>${grade}</strong></td>
-          <td>${ev.name}</td>
-          <td style="color:var(--text-muted);font-size:12px;">${slot}</td>
-          <td>${blueName  ? `<span class="chip-blue">${blueName}</span>`  : '<span style="color:#94a3b8;font-size:12px;">미입력</span>'}</td>
-          <td>${whiteName ? `<span class="chip-white">${whiteName}</span>` : '<span style="color:#94a3b8;font-size:12px;">미입력</span>'}</td>
-        `;
-        tbody.appendChild(tr);
-        rowCount++;
+      slots.forEach(slot=>{
+        const blueName=currentRoster[grade]?.['청팀(1반팀)']?.[ev.name]?.[slot]||'', whiteName=currentRoster[grade]?.['백팀(2반팀)']?.[ev.name]?.[slot]||'';
+        const tr=document.createElement('tr'); if(rowCount%2===0)tr.style.background='#fafafa';
+        tr.innerHTML=`<td><strong>${grade}</strong></td><td>${ev.name}</td><td style="color:var(--text-muted);font-size:12px;">${slot}</td><td>${blueName?`<span class="chip-blue">${blueName}</span>`:'<span style="color:#94a3b8;font-size:12px;">미입력</span>'}</td><td>${whiteName?`<span class="chip-white">${whiteName}</span>`:'<span style="color:#94a3b8;font-size:12px;">미입력</span>'}</td>`;
+        tbody.appendChild(tr); rowCount++;
       });
     });
   });
-
-  if (rowCount === 0) {
-    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:20px;color:#94a3b8;">데이터가 없습니다.</td></tr>';
-  }
-
-  table.appendChild(tbody);
-  wrapper.appendChild(table);
-  container.appendChild(wrapper);
+  if (rowCount===0) tbody.innerHTML='<tr><td colspan="5" style="text-align:center;padding:20px;color:#94a3b8;">데이터가 없습니다.</td></tr>';
+  table.appendChild(tbody); wrapper.appendChild(table); container.appendChild(wrapper);
 }
 
-// =====================================================
-// 초기화
-// =====================================================
-window.addEventListener('load', () => {
-  renderAccordion();
+// ════════════════════════════════════════
+// ★ 타임라인 진행 관리 탭
+// ════════════════════════════════════════
+async function loadTimelineManage() {
+  const notice = document.getElementById('tlManageNotice');
+  const listEl = document.getElementById('tlManageList');
+  const quickBtns = document.getElementById('tlQuickBtns');
 
-  const ctx = document.getElementById('scoreChart').getContext('2d');
-  scoreChartInstance = new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: ['🔵 청팀 (1반팀)', '⚪ 백팀 (2반팀)'],
-      datasets: [{ data: [0, 0], backgroundColor: ['#2563eb', '#64748b'], borderWidth: 0 }]
-    },
-    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, max: 1600 } } }
-  });
+  if (!isAdmin) {
+    notice.innerHTML = '🔒 <strong>체육교사 인증</strong> 후 상태 변경이 가능합니다. 상단의 "체육교사 인증" 버튼을 눌러주세요.';
+    notice.style.background = '#f1f5f9'; notice.style.color = '#475569'; notice.style.borderColor = '#cbd5e1';
+    listEl.innerHTML = '<div style="text-align:center;padding:30px;color:#94a3b8;font-size:14px;">🔒 교사 인증이 필요합니다.</div>';
+    quickBtns.innerHTML = '';
+    return;
+  }
 
-  initSupabase().then(() => {
-    startRealtimeSync();
-  });
-});
+  notice.innerHTML = '🟢 <strong>[교사 모드]</strong> 드롭다운으로 각 순서의 상태를 변경하세요. 변경 즉시 당일 앱에 실시간 반영됩니다.';
+  notice.style.background = '#f0fdf4'; notice.style.color = '#16a34a'; notice.style.borderColor = '#bbf7d0';
 
-// =====================================================
-// Supabase Realtime 실시간 구독
-// =====================================================
+  listEl.innerHTML = '<div class="loading-spinner"><span class="spinner"></span> 불러오는 중...</div>';
+
+  try {
+    const { data, error } = await db.from('timeline').select('*');
+    if (error) throw error;
+    tlStatusMap = {};
+    (data||[]).forEach(r => { tlStatusMap[r.event_id] = r.status; });
+    renderTimelineManage();
+  } catch(e) {
+    listEl.innerHTML = `<div style="color:#dc2626;padding:16px;">❌ 로드 실패: ${e.message}</div>`;
+  }
+}
+
+function renderTimelineManage() {
+  const listEl = document.getElementById('tlManageList');
+  const quickBtns = document.getElementById('tlQuickBtns');
+  const statusLabel = { done:'✅ 완료', current:'🟠 진행중', upcoming:'⬜ 대기' };
+  const statusColor = { done:'#dcfce7', current:'#dbeafe', upcoming:'#f1f5f9' };
+  const statusTextColor = { done:'#166534', current:'#1e40af', upcoming:'#475569' };
+  const disabled = isAdmin ? '' : 'disabled';
+
+  // 현재 진행중 순서 찾기
+  const currentIdx = TL_META.findIndex(s => (tlStatusMap[s.id]||'upcoming') === 'current');
+
+  // 빠른 실행 버튼: 다음 순서로 넘기기
+  if (isAdmin && currentIdx >= 0 && currentIdx < TL_META.length - 1) {
+    const nextItem = TL_META[currentIdx + 1];
+    quickBtns.innerHTML = `
+      <button class="tl-quick-btn" onclick="quickAdvance()" style="background:#1e40af;color:white;border-color:#1e40af;">
+        ▶ 다음 순서로: "${nextItem.title}"
+      </button>`;
+  } else if (isAdmin && currentIdx === -1) {
+    quickBtns.innerHTML = `<button class="tl-quick-btn" onclick="quickStart()" style="background:#16a34a;color:white;border-color:#16a34a;">▶ 첫 번째 순서 시작</button>`;
+  } else {
+    quickBtns.innerHTML = '';
+  }
+
+  listEl.innerHTML = TL_META.map((s, idx) => {
+    const status = tlStatusMap[s.id] || 'upcoming';
+    return `
+      <div class="tl-manage-row">
+        <div class="tl-manage-left">
+          <span class="tl-order-num">${idx+1}</span>
+          <span class="tl-manage-title">${s.title}</span>
+        </div>
+        <div class="tl-manage-right">
+          <span class="tl-status-badge ${status}">${statusLabel[status]}</span>
+          <select class="tl-status-select" onchange="updateTimelineStatus('${s.id}', this.value)" ${disabled}>
+            <option value="upcoming" ${status==='upcoming'?'selected':''}>⬜ 대기</option>
+            <option value="current"  ${status==='current'?'selected':''}>🟠 진행중</option>
+            <option value="done"     ${status==='done'?'selected':''}>✅ 완료</option>
+          </select>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+async function updateTimelineStatus(eventId, newStatus) {
+  if (!isAdmin) { alert('교사 인증이 필요합니다.'); return; }
+  setSyncStatus('syncing','⏱ 타임라인 상태 저장 중...');
+  try {
+    const { error } = await db.from('timeline').upsert({ event_id: eventId, status: newStatus }, { onConflict: 'event_id' });
+    if (error) throw error;
+    tlStatusMap[eventId] = newStatus;
+    renderTimelineManage();
+    setSyncStatus('ok','✅ 저장됨 — 당일 앱에 즉시 반영');
+    showToast('⏱ 타임라인이 업데이트되었습니다');
+  } catch(e) {
+    setSyncStatus('error','❌ 저장 실패: '+e.message);
+    alert('저장 실패: '+e.message);
+  }
+}
+
+// 다음 순서로 빠르게 넘기기
+async function quickAdvance() {
+  if (!isAdmin) return;
+  const currentIdx = TL_META.findIndex(s => (tlStatusMap[s.id]||'upcoming') === 'current');
+  if (currentIdx < 0 || currentIdx >= TL_META.length - 1) return;
+  const currentId = TL_META[currentIdx].id;
+  const nextId    = TL_META[currentIdx + 1].id;
+  setSyncStatus('syncing','⏱ 다음 순서로 진행 중...');
+  try {
+    await db.from('timeline').upsert({ event_id: currentId, status: 'done' },    { onConflict: 'event_id' });
+    await db.from('timeline').upsert({ event_id: nextId,    status: 'current' }, { onConflict: 'event_id' });
+    tlStatusMap[currentId] = 'done';
+    tlStatusMap[nextId]    = 'current';
+    renderTimelineManage();
+    setSyncStatus('ok','✅ 다음 순서로 이동 완료 — 당일 앱에 즉시 반영');
+    showToast(`▶ "${TL_META[currentIdx+1].title}" 시작!`);
+  } catch(e) {
+    setSyncStatus('error','❌ 실패: '+e.message);
+  }
+}
+
+// 첫 번째 순서 시작
+async function quickStart() {
+  if (!isAdmin) return;
+  setSyncStatus('syncing','⏱ 시작 중...');
+  try {
+    await db.from('timeline').upsert({ event_id: TL_META[0].id, status: 'current' }, { onConflict: 'event_id' });
+    tlStatusMap[TL_META[0].id] = 'current';
+    renderTimelineManage();
+    setSyncStatus('ok','✅ 행사 시작! — 당일 앱에 즉시 반영');
+    showToast('🏆 행사 시작!');
+  } catch(e) { setSyncStatus('error','❌ 실패: '+e.message); }
+}
+
+// ── Realtime
 function startRealtimeSync() {
-  db.channel('roster-changes')
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'roster' }, (payload) => {
-      setSyncStatus('syncing', '🔄 다른 반에서 명단 업데이트 중...');
-      if (payload.eventType === 'DELETE') {
-        const old = payload.old;
-        if (currentRoster[old.grade]?.[old.team]?.[old.event_name]) {
-          delete currentRoster[old.grade][old.team][old.event_name][old.slot];
-        }
-      } else {
-        const row = payload.new;
-        if (!currentRoster[row.grade]) currentRoster[row.grade] = {};
-        if (!currentRoster[row.grade][row.team]) currentRoster[row.grade][row.team] = {};
-        if (!currentRoster[row.grade][row.team][row.event_name]) currentRoster[row.grade][row.team][row.event_name] = {};
-        currentRoster[row.grade][row.team][row.event_name][row.slot] = row.student_name || '';
-      }
-      renderRosterForm();
-      // 청백명단 탭이 열려 있으면 자동 갱신
-      if (document.getElementById('tab-allroster').classList.contains('active')) {
-        renderAllRoster();
-      }
-      setSyncStatus('ok', '✅ 실시간 동기화됨 — ' + new Date().toLocaleTimeString('ko-KR'));
-      showToast('📋 다른 반의 출전 명단이 업데이트되었습니다.');
-    })
-    .subscribe();
+  db.channel('roster-changes').on('postgres_changes',{event:'*',schema:'public',table:'roster'},payload=>{
+    setSyncStatus('syncing','🔄 다른 반에서 명단 업데이트 중...');
+    if (payload.eventType==='DELETE') { const old=payload.old; if(currentRoster[old.grade]?.[old.team]?.[old.event_name]) delete currentRoster[old.grade][old.team][old.event_name][old.slot]; }
+    else { const row=payload.new; if(!currentRoster[row.grade])currentRoster[row.grade]={}; if(!currentRoster[row.grade][row.team])currentRoster[row.grade][row.team]={}; if(!currentRoster[row.grade][row.team][row.event_name])currentRoster[row.grade][row.team][row.event_name]={}; currentRoster[row.grade][row.team][row.event_name][row.slot]=row.student_name||''; }
+    renderRosterForm();
+    if (document.getElementById('tab-allroster').classList.contains('active')) renderAllRoster();
+    setSyncStatus('ok','✅ 실시간 동기화됨 — '+new Date().toLocaleTimeString('ko-KR'));
+    showToast('📋 다른 반의 출전 명단이 업데이트되었습니다.');
+  }).subscribe();
 
-  db.channel('parents-changes')
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'parents' }, (payload) => {
-      setSyncStatus('syncing', '🔄 학부모 명단 업데이트 중...');
-      if (payload.eventType === 'INSERT') {
-        const row = payload.new;
-        const key = `${row.grade}_${row.team}`;
-        if (!parentsData[key]) parentsData[key] = [];
-        if (!parentsData[key].find(p => p.id === row.id)) {
-          parentsData[key].push({ id: row.id, relation: row.relation, name: row.name, phone: row.phone, status: row.status });
-        }
-      } else if (payload.eventType === 'DELETE') {
-        const old = payload.old;
-        const key = `${old.grade}_${old.team}`;
-        if (parentsData[key]) parentsData[key] = parentsData[key].filter(p => p.id !== old.id);
-      }
-      renderParentsForm();
-      setSyncStatus('ok', '✅ 실시간 동기화됨 — ' + new Date().toLocaleTimeString('ko-KR'));
-      showToast('👪 학부모 참석 명단이 업데이트되었습니다.');
-    })
-    .subscribe();
+  db.channel('parents-changes').on('postgres_changes',{event:'*',schema:'public',table:'parents'},payload=>{
+    setSyncStatus('syncing','🔄 학부모 명단 업데이트 중...');
+    if (payload.eventType==='INSERT') { const row=payload.new; const key=`${row.grade}_${row.team}`; if(!parentsData[key])parentsData[key]=[]; if(!parentsData[key].find(p=>p.id===row.id)) parentsData[key].push({id:row.id,relation:row.relation,name:row.name,phone:row.phone,status:row.status}); }
+    else if (payload.eventType==='DELETE') { const old=payload.old; const key=`${old.grade}_${old.team}`; if(parentsData[key])parentsData[key]=parentsData[key].filter(p=>p.id!==old.id); }
+    renderParentsForm();
+    setSyncStatus('ok','✅ 실시간 동기화됨 — '+new Date().toLocaleTimeString('ko-KR'));
+    showToast('👪 학부모 참석 명단이 업데이트되었습니다.');
+  }).subscribe();
 
-  db.channel('scores-changes')
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'scores' }, (payload) => {
-      const row = payload.new;
-      if (!row) return;
-      matchScores[row.event_name] = { blue: row.blue || 0, white: row.white || 0 };
-      renderScoreTable();
-      setSyncStatus('ok', '✅ 점수 실시간 반영됨 — ' + new Date().toLocaleTimeString('ko-KR'));
-      showToast('📊 점수가 실시간으로 업데이트되었습니다.');
-    })
-    .subscribe();
-
-  setSyncStatus('ok', '✅ 실시간 동기화 활성화 — 모든 변경사항이 자동 반영됩니다');
+  db.channel('scores-changes').on('postgres_changes',{event:'*',schema:'public',table:'scores'},payload=>{
+    const row=payload.new; if(!row)return;
+    matchScores[row.event_name]={blue:row.blue||0,white:row.white||0};
+    renderScoreTable();
+    setSyncStatus('ok','✅ 점수 실시간 반영됨 — '+new Date().toLocaleTimeString('ko-KR'));
+    showToast('📊 점수가 실시간으로 업데이트되었습니다.');
+  }).subscribe();
 }
 
-// =====================================================
-// 토스트 알림
-// =====================================================
+// ── Toast
 function showToast(msg) {
-  let toast = document.getElementById('realtimeToast');
-  if (!toast) {
-    toast = document.createElement('div');
-    toast.id = 'realtimeToast';
-    toast.style.cssText = `
-      position:fixed; bottom:24px; right:24px; z-index:9999;
-      background:#1e40af; color:white; padding:12px 18px;
-      border-radius:10px; font-size:13px; font-weight:bold;
-      box-shadow:0 4px 12px rgba(0,0,0,0.2);
-      transition:opacity 0.4s ease; opacity:0;
-      max-width:280px; line-height:1.4;
-    `;
-    document.body.appendChild(toast);
-  }
-  toast.textContent = msg;
-  toast.style.opacity = '1';
-  clearTimeout(toast._timer);
-  toast._timer = setTimeout(() => { toast.style.opacity = '0'; }, 3500);
+  let toast=document.getElementById('realtimeToast');
+  if (!toast) { toast=document.createElement('div'); toast.id='realtimeToast'; toast.style.cssText='position:fixed;bottom:24px;right:24px;z-index:9999;background:#1e40af;color:white;padding:12px 18px;border-radius:10px;font-size:13px;font-weight:bold;box-shadow:0 4px 12px rgba(0,0,0,.2);transition:opacity .4s ease;opacity:0;max-width:280px;line-height:1.4;'; document.body.appendChild(toast); }
+  toast.textContent=msg; toast.style.opacity='1';
+  clearTimeout(toast._timer); toast._timer=setTimeout(()=>{toast.style.opacity='0';},3500);
 }
+
+// ── 초기화
+window.addEventListener('load',()=>{
+  renderAccordion();
+  const ctx=document.getElementById('scoreChart').getContext('2d');
+  scoreChartInstance=new Chart(ctx,{type:'bar',data:{labels:['🔵 청팀 (1반팀)','⚪ 백팀 (2반팀)'],datasets:[{data:[0,0],backgroundColor:['#2563eb','#64748b'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,max:1600}}}});
+  initSupabase().then(()=>{ startRealtimeSync(); });
+});
 </script>
 </body>
 </html>
